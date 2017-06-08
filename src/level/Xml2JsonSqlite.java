@@ -5,6 +5,9 @@ import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.util.Arrays;
+
+import javax.swing.JOptionPane;
 
 import db.DBUtil;
 import json.FastJsonUtil;
@@ -13,15 +16,26 @@ import util.Utils;
 import util.XlsUtil;
 
 public class Xml2JsonSqlite {
-//	private Connection Conn = null;
+	// private Connection Conn = null;
 	private WordVisitor wordParser = new WordVisitor();
-	private static int mRow = 0;//单词的词频/已生成的excel行数
+	private static int mRow = 0;// 单词的词频/已生成的excel行数
+
 	// 1.读xml单词文件
 	// 2.解析成JavaBean/Model
 	// 3.写入文件/数据库
 	public Xml2JsonSqlite() {
-		//Conn = DBUtil.getConn();
+		// Conn = DBUtil.getConn();
+		//String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
+		//String sqlSelect = "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
+		String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,wordMore);";
+		int nCount = DBUtil.ExecuteUpdate(sqlCreate);
+		if (nCount != 1) {
+			 System.out.println("Xml2JsonSqlite nCount=" + nCount);
+		}
+		//String sqlSelect = "select frequency,spelling,wordMore from levelWordTable;";
+		//ResultSet rs = DBUtil.ExecuteQuery(sqlSelect);
 	}
+
 	public void traversalDocumentByVisitor(String xmlWordFile) {
 		try {
 			wordParser.getDocument(xmlWordFile).accept(wordParser);
@@ -29,8 +43,6 @@ public class Xml2JsonSqlite {
 			Utils.writerFileTest(errFile, xmlWordFile);
 		}
 	}
-	
-	
 
 	public void readFileTest(String filename) {
 		String path = "./vocabulary_ciba";
@@ -50,15 +62,26 @@ public class Xml2JsonSqlite {
 				traversalDocumentByVisitor(path + "/" + file);
 				Word word = wordParser.getWord();
 				word.setWordFrequency(arr[0]);
-				
+
 				// System.out.println(word.toString());
 				// System.out.println(word.toStringList(arr[0]));
-				
+
 				String wordJson = FastJsonUtil.obj2json(word);
-				//insert sqlite
-				String insertSql = "";
-				int nCount = DBUtil.ExecuteUpdate(insertSql);
-				//wordJson
+				
+				System.out.println("Xml2JsonSqlite word.getWordFrequency()=" + word.getWordFrequency());
+				System.out.println("Xml2JsonSqlite word.getKey()=" + word.getKey());
+				System.out.println("Xml2JsonSqlite wordJson=" + wordJson);
+				String[] param = { word.getWordFrequency(), word.getKey(),
+						wordJson };
+				System.out.println("Xml2JsonSqlite,Arrays=" + Arrays.toString(param));
+				// insert sqlite
+				String insertSql = "INSERT INTO levelWordTable VALUES(?,?,?)";
+				int nCount = DBUtil.ExecuteUpdate(insertSql, param);
+				if (nCount != 1) {
+					Utils.writerFileTest(errFile, path + "/" + file);
+				}
+
+				// wordJson
 				line = dr.readLine();
 			}
 
@@ -74,8 +97,8 @@ public class Xml2JsonSqlite {
 		try {
 			Utils.deleteFile(errFile);
 			Utils.deleteFile("LevelDict.xls");
-			//book = XlsUtil.createXLS("LevelDict.xls", "vocabulary", 0);
-			//sheet = book.getSheet(0);
+			// book = XlsUtil.createXLS("LevelDict.xls", "vocabulary", 0);
+			// sheet = book.getSheet(0);
 			String filename = "./src/vocabulary.txt";
 			Xml2JsonSqlite levelSqlite = new Xml2JsonSqlite();
 			levelSqlite.readFileTest(filename);
