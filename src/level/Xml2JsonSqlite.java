@@ -1,11 +1,13 @@
 package level;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.util.Arrays;
+import java.util.Vector;
 
 import javax.swing.JOptionPane;
 
@@ -16,7 +18,7 @@ import util.Utils;
 import util.XlsUtil;
 
 public class Xml2JsonSqlite {
-	// private Connection Conn = null;
+	private DBUtil dbMgr = null;
 	private WordVisitor wordParser = new WordVisitor();
 	private static int mRow = 0;// 单词的词频/已生成的excel行数
 
@@ -24,16 +26,19 @@ public class Xml2JsonSqlite {
 	// 2.解析成JavaBean/Model
 	// 3.写入文件/数据库
 	public Xml2JsonSqlite() {
-		// Conn = DBUtil.getConn();
-		//String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
-		//String sqlSelect = "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
+		dbMgr = new DBUtil();
+		// String sqlCreate =
+		// "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
+		// String sqlSelect =
+		// "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
 		String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,wordMore);";
-		int nCount = DBUtil.ExecuteUpdate(sqlCreate);
+		int nCount = dbMgr.executeUpdate(sqlCreate);
 		if (nCount != 1) {
-			 System.out.println("Xml2JsonSqlite nCount=" + nCount);
+			System.out.println("Xml2JsonSqlite nCount=" + nCount);
 		}
-		//String sqlSelect = "select frequency,spelling,wordMore from levelWordTable;";
-		//ResultSet rs = DBUtil.ExecuteQuery(sqlSelect);
+		// String sqlSelect =
+		// "select frequency,spelling,wordMore from levelWordTable;";
+		// ResultSet rs = DBUtil.ExecuteQuery(sqlSelect);
 	}
 
 	public void traversalDocumentByVisitor(String xmlWordFile) {
@@ -50,6 +55,7 @@ public class Xml2JsonSqlite {
 
 		// StringBuffer bs = new StringBuffer();
 		try {
+			Vector vecWords = new Vector();
 			FileInputStream f = new FileInputStream(filename);
 			// DataInputStream dr = new DataInputStream(f);
 			BufferedReader dr = new BufferedReader(new InputStreamReader(f));
@@ -59,7 +65,7 @@ public class Xml2JsonSqlite {
 				// line = line.trim().replaceFirst("\t", "-");
 				file = arr[0] + "-" + arr[1] + ".xml";
 				System.out.println(file);
-				traversalDocumentByVisitor(path + "/" + file);
+				traversalDocumentByVisitor(path + File.separator + file);
 				Word word = wordParser.getWord();
 				word.setWordFrequency(arr[0]);
 
@@ -67,24 +73,34 @@ public class Xml2JsonSqlite {
 				// System.out.println(word.toStringList(arr[0]));
 
 				String wordJson = FastJsonUtil.obj2json(word);
-				
-				System.out.println("Xml2JsonSqlite word.getWordFrequency()=" + word.getWordFrequency());
-				System.out.println("Xml2JsonSqlite word.getKey()=" + word.getKey());
-				System.out.println("Xml2JsonSqlite wordJson=" + wordJson);
-				String[] param = { word.getWordFrequency(), word.getKey(),
-						wordJson };
-				System.out.println("Xml2JsonSqlite,Arrays=" + Arrays.toString(param));
-				// insert sqlite
-				String insertSql = "INSERT INTO levelWordTable VALUES(?,?,?)";
-				int nCount = DBUtil.ExecuteUpdate(insertSql, param);
-				if (nCount != 1) {
-					Utils.writerFileTest(errFile, path + "/" + file);
-				}
+				Vector vecWord = new Vector();
+				vecWord.add(word.getWordFrequency());
+				vecWord.add(word.getKey());
+				vecWord.add(wordJson);
+				vecWords.add(vecWord);
 
-				// wordJson
+				// System.out.println("Xml2JsonSqlite word.getWordFrequency()="
+				// + word.getWordFrequency());
+				// System.out.println("Xml2JsonSqlite word.getKey()="
+				// + word.getKey());
+				// System.out.println("Xml2JsonSqlite wordJson=" + wordJson);
+				// String[] param = { word.getWordFrequency(), word.getKey(),
+				// wordJson };
+				// System.out.println("Xml2JsonSqlite,Arrays="
+				// + Arrays.toString(param));
+				// insert sqlite
+				// String insertSql =
+				// "INSERT INTO levelWordTable VALUES(?,?,?)";
+				// int nCount = dbMgr.ExecuteUpdate(insertSql, param);
+				// if (nCount != 1) {
+				// Utils.writerFileTest(errFile, path + File.separator + file);
+				// }
+
 				line = dr.readLine();
 			}
-
+			String insertSql = "INSERT INTO levelWordTable VALUES(?,?,?)";
+			dbMgr.executeBatchInsert(insertSql, vecWords);
+			dbMgr.closeConn();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -1,42 +1,36 @@
 package level;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.EventQueue;
-
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.border.EmptyBorder;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-
 import java.awt.Toolkit;
-
-import javax.swing.DefaultCellEditor;
-import javax.swing.JButton;
-import javax.swing.JComboBox;
-import javax.swing.JScrollPane;
-import javax.swing.JTextField;
-import javax.swing.JLabel;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.Vector;
 
+import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.MouseInputListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 
 import db.DBUtil;
-
-
 
 /*
  JTable常见用法细则 
@@ -231,33 +225,34 @@ public class LevelWord extends JFrame {
 		// { "A4", "B4", "C4" }, { "A5", "B5", "C5" } }; // 数据
 		// String sqlDrop = "drop table if exists levelWordTable;";
 		// DBUtil.ExecuteUpdate(sqlDrop);
+		final DBUtil dbMgr = new DBUtil();
 		String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
-		int count = DBUtil.ExecuteUpdate(sqlCreate);
+		int count = dbMgr.executeUpdate(sqlCreate);
 		String sqlSelect = "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
-		ResultSet rs = DBUtil.ExecuteQuery(sqlSelect);
+		ResultSet rs = dbMgr.executeQuery(sqlSelect);
 		// Object[][] tableCellValues = DBUtil.ResultSetToObjectArray(rs);
-		Vector titleVector = new Vector();	//column Names
-		Vector cellsVector = new Vector();	//rows data
+		Vector titleVector = new Vector(); // headVector/column Names/表头集合
+		Vector cellsVector = new Vector(); // rowsVector/rows data/数据体集合
 		try {
 			if (rs != null) {
 				ResultSetMetaData rsmd = rs.getMetaData();
 				for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-					titleVector.addElement(rsmd.getColumnName(i));//columnNames.add(rsmd.getColumnName(i));
+					titleVector.addElement(rsmd.getColumnName(i));// columnNames.add(rsmd.getColumnName(i));
 				}
 				while (rs.next()) {
 					Vector curRow = new Vector();
 					for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-						curRow.addElement(rs.getString(i));//curRow.add(rs.getString(i));
+						curRow.addElement(rs.getString(i));// curRow.add(rs.getString(i));
 					}
 					curRow.addElement("");
-					cellsVector.addElement(curRow);	//rows.add(curRow);
+					cellsVector.addElement(curRow); // rows.add(curRow);
 				}
 			}
 		} catch (SQLException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
-		titleVector.addElement("操作");
+		titleVector.addElement("operate");
 
 		tableModel = new DefaultTableModel(cellsVector, titleVector) {
 			public boolean isCellEditable(int row, int column) {
@@ -265,7 +260,12 @@ public class LevelWord extends JFrame {
 			}
 		};
 		table = new JTable(tableModel);
-		table.setShowGrid(true);
+		// table.setBackground(Color.white);
+		final MouseInputListener mouseInputListener = getMouseInputListener(table);// 添加鼠标右键选择行
+		table.addMouseListener(mouseInputListener);
+		table.addMouseMotionListener(mouseInputListener);
+		table.setCellSelectionEnabled(true);
+
 		// table.setFillsViewportHeight(true);
 		// 1) 设置列不可随容器组件大小变化自动调整宽度.
 		// table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
@@ -296,15 +296,16 @@ public class LevelWord extends JFrame {
 		// 为表格添加监听器// 鼠标事件
 		table.addMouseListener(new MouseAdapter() {
 			public void mouseClicked(MouseEvent e) {
-				if (e.getClickCount() == 2) { // 或 if(e.getClickCount() > 1) 实现双击事件(前提是设置table不能编辑)
+				if (e.getClickCount() == 2) { // 或 if(e.getClickCount() > 1)
+												// 实现双击事件(前提是设置table不能编辑)
 					int row = ((JTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
-					int col = ((JTable) e.getSource()).columnAtPoint(e.getPoint()); // 获得列位置
-					System.out.println("双击鼠标：row=" + row+",col=" + col);
+					int col = ((JTable) e.getSource()).columnAtPoint(e
+							.getPoint()); // 获得列位置
+					System.out.println("右键双击鼠标：row=" + row + ",col=" + col);
 					String cellVal = (String) (tableModel.getValueAt(row, col)); // 获得点击单元格数据
-					aTextField.setText((row+1)+"");
+					aTextField.setText((row + 1) + "");
 					// txtboxCol.setText((col+1)+"");
 					// txtboxContent.setText(cellVal);
-
 				} else if (e.getClickCount() == 1) {
 					int selectedRow = table.getSelectedRow(); // 获得选中行索引
 					Object oa = (String) tableModel.getValueAt(selectedRow, 0);
@@ -313,7 +314,7 @@ public class LevelWord extends JFrame {
 					aTextField.setText(oa.toString()); // 给文本框赋值
 					bTextField.setText(ob.toString());
 					cTextField.setText(oc.toString());
-				}else{
+				} else {
 					return;
 				}
 			}
@@ -333,62 +334,72 @@ public class LevelWord extends JFrame {
 
 					}
 				});
-		//取消表格正在编辑的状态。
+		// 取消表格正在编辑的状态。
 		table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-		
-		
-		JComboBox comboBox = new JComboBox();
-		comboBox.addItem("分可数名词countable noun(c.)");
-		comboBox.addItem("不可数名词uncountable noun(u.)");
-		comboBox.addItem("及物动词verb transitive(vt)");
-		comboBox.addItem("不及物动词verb intransitive(vi)");
-		comboBox.addItem("助动词auxiliary verb(aux.v)");
-		comboBox.addItem("情态动词modal verb");
-		comboBox.addItem("短语动词phr v(phrasal verb)");
-		comboBox.addItem("形容词 Adjectives(a./adj.)");
-		comboBox.addItem("副词 Adverbs(ad./adv.)");
-		comboBox.addItem("数词 Numeral(num.)");
-		comboBox.addItem("感叹词 Interjection(interj.) ");
-		comboBox.addItem("代（名）词 Pronouns(pron.)");
-		comboBox.addItem("介词 Prepositions(prep.)");
-		comboBox.addItem("冠词 Article(art.)");
-		comboBox.addItem("连词 Conjunction（conj.）");
-		comboBox.addItem("疑问词 Interrogative (int.)");
-		comboBox.addItem("量词 Quantifier(quant.)");
-		comboBox.addItem("复数plural(pl.)");
 
-		 TableColumn tableColumn = table.getColumn("partsOfSpeech");
+		// JComboBox comboBox = new JComboBox();
+		// comboBox.addItem("分可数名词countable noun(c.)");
+		// comboBox.addItem("不可数名词uncountable noun(u.)");
+		// comboBox.addItem("及物动词verb transitive(vt)");
+		// comboBox.addItem("不及物动词verb intransitive(vi)");
+		// comboBox.addItem("助动词auxiliary verb(aux.v)");
+		// comboBox.addItem("情态动词modal verb");
+		// comboBox.addItem("短语动词phr v(phrasal verb)");
+		// comboBox.addItem("形容词 Adjectives(a./adj.)");
+		// comboBox.addItem("副词 Adverbs(ad./adv.)");
+		// comboBox.addItem("数词 Numeral(num.)");
+		// comboBox.addItem("感叹词 Interjection(interj.) ");
+		// comboBox.addItem("代（名）词 Pronouns(pron.)");
+		// comboBox.addItem("介词 Prepositions(prep.)");
+		// comboBox.addItem("冠词 Article(art.)");
+		// comboBox.addItem("连词 Conjunction（conj.）");
+		// comboBox.addItem("疑问词 Interrogative (int.)");
+		// comboBox.addItem("量词 Quantifier(quant.)");
+		// comboBox.addItem("复数plural(pl.)");
+
+		String[] items = new String[] { "Snowboarding", "Rowing", "Knitting",
+				"Speed reading", "None of the above" };
+		JComboBox comboBox = new JComboBox(items);
+		// Dimension d = comboBox.getPreferredSize();
+		// comboBox.setPopupWidth(d.width);
+
+		// TableColumn tableColumn = table.getColumn("partsOfSpeech");
 		// 利用TableColumn类中的setCellEditor()方法来设置单元格的编辑器
 		// DefaultCellEditor类可以将表格中的单元格设置成下拉框
-		 tableColumn.setCellEditor(new DefaultCellEditor(comboBox));
+		// tableColumn.setCellEditor(new DefaultCellEditor(comboBox));
+		TableColumnModel tcm = table.getColumnModel();
+		tcm.getColumn(3).setCellEditor(new DefaultCellEditor(comboBox));
+
+		//TableColumn tc = tcm.getColumn(0);
+		TableColumn tc = table.getColumn("operate");
+		tc.setPreferredWidth(120);
+		tc.setCellRenderer(new WordTableCellRenderer());
+		tc.setCellEditor(new WordTableCellEditor());
 
 		scrollPane.setViewportView(table);
 
-		final JPanel panel = new JPanel();
-		getContentPane().add(panel, BorderLayout.NORTH);
+		final JPanel panelNorth = new JPanel();
+		getContentPane().add(panelNorth, BorderLayout.NORTH);
 
-		panel.add(new JLabel("Frequency: "));
+		panelNorth.add(new JLabel("Frequency: "));
 		aTextField = new JTextField("", 6);
-		panel.add(aTextField);
+		panelNorth.add(aTextField);
 
-		panel.add(new JLabel("Spelling: "));
+		panelNorth.add(new JLabel("Spelling: "));
 		bTextField = new JTextField("", 20);
-		panel.add(bTextField);
+		panelNorth.add(bTextField);
 
-		panel.add(new JLabel("Level: "));
+		panelNorth.add(new JLabel("Level: "));
 		cTextField = new JTextField("", 4);
-		panel.add(cTextField);
+		panelNorth.add(cTextField);
 
-    	final JButton addButton = new JButton("添加"); // 添加按钮
+		final JButton addButton = new JButton("添加"); // 添加按钮
 		addButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
-						//((TableTableModel) table.getModel()).addRow(new String[] {"行" + (i++), "含一", "行2", "行3" });
-						//((TableTableModel) table.getModel()).insertRow(rowI >= 0 ? rowI : 0), new String[] { "插入行" + (j++), 插入行1", "插入行2", "插入行3" });"
-						
 						String sqlSelect = "select COUNT(*) as totalCount from levelWordTable where spelling = ? and partsOfSpeech=?";
 						Object param[] = { bTextField.getText(),
 								aTextField.getText() };
-						ResultSet rs = DBUtil.ExecuteQuery(sqlSelect, param);
+						ResultSet rs = dbMgr.executeQuery(sqlSelect, param);
 						int totalCount = 0;
 						try {
 							if (rs.next()) {
@@ -405,7 +416,7 @@ public class LevelWord extends JFrame {
 						} else if (totalCount == 1) { // update db
 							// 写数据库
 							String sqlUpdate = "update partsOfSpeech,meaning,exampleSentence from levelWordTable";
-							DBUtil.ExecuteUpdate(sqlUpdate);
+							dbMgr.executeUpdate(sqlUpdate);
 						}
 						int rowCount = table.getRowCount() + 1; // 行数加上1
 						// aTextField.setText("A" + rowCount);
@@ -416,7 +427,7 @@ public class LevelWord extends JFrame {
 						cTextField.setText("");
 					}
 				});
-		panel.add(addButton);
+		panelNorth.add(addButton);
 
 		final JButton updateButton = new JButton("修改"); // 修改按钮
 		updateButton.addActionListener(new ActionListener() {// 添加事件
@@ -435,7 +446,7 @@ public class LevelWord extends JFrame {
 						}
 					}
 				});
-		panel.add(updateButton);
+		panelNorth.add(updateButton);
 
 		final JButton delButton = new JButton("删除");
 		delButton.addActionListener(new ActionListener() {// 添加事件
@@ -447,11 +458,10 @@ public class LevelWord extends JFrame {
 						}
 					}
 				});
-		panel.add(delButton);
-		
-		
-		final JPanel panel2 = new JPanel();
-		getContentPane().add(panel2, BorderLayout.SOUTH);
+		panelNorth.add(delButton);
+
+		final JPanel panelSouth = new JPanel();
+		getContentPane().add(panelSouth, BorderLayout.SOUTH);
 
 		final JButton insertButton = new JButton("插入");
 		insertButton.addActionListener(new ActionListener() {// 添加事件
@@ -459,10 +469,69 @@ public class LevelWord extends JFrame {
 						int selectedRow = table.getSelectedRow();// 获得选中行的索引
 						if (selectedRow != -1) // 存在选中行
 						{
-							
+
 						}
 					}
 				});
-		panel2.add(insertButton);
+		panelSouth.add(insertButton);
+
+		final JButton refreshButton = new JButton("刷新");
+		refreshButton.addActionListener(new ActionListener() {// 添加事件
+					public void actionPerformed(ActionEvent e) {
+						tableModel.fireTableDataChanged();
+					}
+				});
+		panelSouth.add(refreshButton);
+	}
+
+	/*
+	 * 添加鼠标右键单击选择监听，并显示右键菜单
+	 */
+	private static MouseInputListener getMouseInputListener(final JTable jTable) {
+		return new MouseInputListener() {
+			public void mouseClicked(MouseEvent e) {
+				processEvent(e);
+			}
+
+			public void mousePressed(MouseEvent e) {
+				processEvent(e);
+			}
+
+			public void mouseReleased(MouseEvent e) {
+				processEvent(e);
+				if ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0
+						&& !e.isControlDown() && !e.isShiftDown()) {
+					// popupMenu.show(tableLyz, e.getX(), e.getY());//右键菜单显示
+				}
+			}
+
+			public void mouseEntered(MouseEvent e) {
+				processEvent(e);
+			}
+
+			public void mouseExited(MouseEvent e) {
+				processEvent(e);
+			}
+
+			public void mouseDragged(MouseEvent e) {
+				processEvent(e);
+			}
+
+			public void mouseMoved(MouseEvent e) {
+				processEvent(e);
+			}
+
+			private void processEvent(MouseEvent e) {
+				if ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0) {
+					int modifiers = e.getModifiers();
+					modifiers -= MouseEvent.BUTTON3_MASK;
+					modifiers |= MouseEvent.BUTTON1_MASK;
+					MouseEvent ne = new MouseEvent(e.getComponent(), e.getID(),
+							e.getWhen(), modifiers, e.getX(), e.getY(),
+							e.getClickCount(), false);
+					jTable.dispatchEvent(ne);
+				}
+			}
+		};
 	}
 }

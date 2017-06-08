@@ -18,7 +18,7 @@ import com.alibaba.fastjson.JSONObject;
  */
 public class Xml2Json {
 	public static void main(String[] args) throws Exception {
-		String filename = "E:/workspace/FmyVocabulary/vocabulary_ciba/00015-with.xml";
+		String filename = "E:/workspace/FmyVocabulary/vocabulary_ciba/00013-on.xml";
 		JSONObject json = xmlFile2Json(filename);
 		System.out.println("xml2Json:" + json.toJSONString());
 	}
