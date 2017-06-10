@@ -85,8 +85,8 @@ public class DBUtil {
 	// sqlite
 	private static final String dbDriver = "org.sqlite.JDBC";
 	private static final String dbUrl = "jdbc:sqlite:";
-	private static final String DB_NAME = "LevelWordDB2.db3"; // "c:/testDB.db3";
-																// //数据库名称
+	private static final String DB_NAME = "LevelDict.db3"; // "c:/testDB.db3";
+															// //数据库名称
 	private static final String dbUser = "";
 	private static final String dbPwd = "";
 

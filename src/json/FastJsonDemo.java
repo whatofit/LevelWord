@@ -2,7 +2,7 @@ package json;
 
 //fastjson.jar下载地址
 //http://mvnrepository.com/artifact/com.alibaba/fastjson
-	
+
 //Fastjson API入口类是com.alibaba.fastjson.JSON，常用的序列化操作都可以在JSON类上的静态方法直接完成。
 //public static final Object parse(String text); // 把JSON文本parse为JSONObject或者JSONArray 
 //public static final JSONObject parseObject(String text)； // 把JSON文本parse成JSONObject    
@@ -39,12 +39,13 @@ public class FastJsonDemo {
 		fastJson.test_json2list();
 		fastJson.test_json2map();
 	}
+
 	public void test_dateFormat() {
 		Date date = new Date();
 		String json = FastJsonUtil.obj2json(date);
-//		String expected = "\""
-//				+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)
-//				+ "\"";
+		// String expected = "\""
+		// + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date)
+		// + "\"";
 		System.out.println("test_dateFormat:" + json);
 	}
 
@@ -67,7 +68,8 @@ public class FastJsonDemo {
 	public void test_json2obj() {
 		String json = "{\"id\":1,\"name\":\"张三\"}";
 		User user = FastJsonUtil.json2obj(json, User.class);
-		System.out.println("test_json2obj,id=" + user.getId() + ",name＝" +user.getName());
+		System.out.println("test_json2obj,id=" + user.getId() + ",name＝"
+				+ user.getName());
 	}
 
 	public void test_json2list() {
@@ -75,11 +77,13 @@ public class FastJsonDemo {
 		List<User> list = FastJsonUtil.json2list(json, User.class);
 		User user1 = list.get(0);
 		User user2 = list.get(1);
-		System.out.println("test_json2list1,id=" + user1.getId() + ",name＝" +user1.getName());
-		System.out.println("test_json2list2,id=" + user2.getId() + ",name＝" +user2.getName());
+		System.out.println("test_json2list1,id=" + user1.getId() + ",name＝"
+				+ user1.getName());
+		System.out.println("test_json2list2,id=" + user2.getId() + ",name＝"
+				+ user2.getName());
 	}
 
-	public void test_json2map()  {
+	public void test_json2map() {
 		String json = "{\"id\":1,\"name\":\"张三\"}";
 		Map<String, Object> map = FastJsonUtil.json2map(json);
 		System.out.println("test_json2map,map.toString()=" + map.toString());
@@ -87,8 +91,10 @@ public class FastJsonDemo {
 		Map<String, User> map2 = FastJsonUtil.json2map(json2, User.class);
 		User user1 = map2.get("user1");
 		User user2 = map2.get("user2");
-		System.out.println("test_json2map1,id=" + user1.getId() + ",name＝" +user1.getName());
-		System.out.println("test_json2map2,id=" + user2.getId() + ",name＝" +user2.getName());
+		System.out.println("test_json2map1,id=" + user1.getId() + ",name＝"
+				+ user1.getName());
+		System.out.println("test_json2map2,id=" + user2.getId() + ",name＝"
+				+ user2.getName());
 	}
 
 	private static class User {

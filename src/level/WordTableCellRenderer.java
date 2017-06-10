@@ -1,6 +1,5 @@
 package level;
 
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -16,24 +15,24 @@ import javax.swing.table.TableCellRenderer;
 public class WordTableCellRenderer extends JPanel implements TableCellRenderer {
 	JButton edit_btn;
 	JButton del_btn;
-	
+
 	JTextField edit_txf;
 
 	public WordTableCellRenderer() {
 		super();
 		setLayout(new BorderLayout());
-		
+
 		edit_btn = new JButton("edit");
 		del_btn = new JButton("del");
 		edit_txf = new JTextField();
-		
+
 		add(edit_btn, BorderLayout.WEST);
 		add(del_btn, BorderLayout.EAST);
 		add(edit_txf);
-		
+
 		edit_btn.setBackground(Color.white);
 		del_btn.setBackground(Color.white);
-		
+
 		edit_btn.setPreferredSize(new Dimension(60, getHeight()));
 		del_btn.setPreferredSize(new Dimension(60, getHeight()));
 	}

@@ -12,7 +12,8 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * xml工具类  Created by fanmingyou on 2017/06/08.
+ * xml工具类 Created by fanmingyou on 2017/06/08.
+ * 
  * @author fanmingyou
  * @date 2017/06/08
  */
@@ -30,12 +31,12 @@ public class Xml2Json {
 	 * @return
 	 * @throws DocumentException
 	 */
-	public static JSONObject xmlFile2Json(String xmlFilename) throws DocumentException {
+	public static JSONObject xmlFile2Json(String xmlFilename)
+			throws DocumentException {
 		String xmlString = FileUtil.readFile3(xmlFilename);
 		return xml2Json(xmlString);
 	}
 
-	
 	/**
 	 * xml转json
 	 * 
@@ -43,7 +44,8 @@ public class Xml2Json {
 	 * @return
 	 * @throws DocumentException
 	 */
-	public static JSONObject xml2Json(String xmlString) throws DocumentException {
+	public static JSONObject xml2Json(String xmlString)
+			throws DocumentException {
 		Document doc = DocumentHelper.parseText(xmlString);
 		JSONObject json = new JSONObject();
 		element2Json(doc.getRootElement(), json);
@@ -101,7 +103,7 @@ public class Xml2Json {
 					}
 				}
 				if (!e.getText().isEmpty()) {
-					json.put(e.getName(), e.getTextTrim());	//e.getText()
+					json.put(e.getName(), e.getTextTrim()); // e.getText()
 				}
 			}
 		}

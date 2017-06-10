@@ -1,6 +1,5 @@
 package level;
 
-
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
@@ -26,68 +25,73 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
 	private EventListenerList listenerList = new EventListenerList();
 	// ChangeEvent用于通知感兴趣的参与者事件源中的状态已发生更改。
 	private ChangeEvent changeEvent = new ChangeEvent(this);
-	
+
 	JButton edit_btn;
 	JButton del_btn;
 	JTextField edit_txf;
-//	JTableTest jTableTest;
+
+	// JTableTest jTableTest;
 
 	public WordTableCellEditor() {
 		super();
 		setLayout(new BorderLayout());
-		
+
 		edit_btn = new JButton("edit");
 		del_btn = new JButton("del");
 		edit_txf = new JTextField();
-		
-		
+
 		add(edit_btn, BorderLayout.WEST);
 		add(del_btn, BorderLayout.EAST);
 		add(edit_txf);
-		
+
 		edit_btn.setBackground(Color.white);
 		del_btn.setBackground(Color.white);
-		
+
 		edit_btn.setPreferredSize(new Dimension(60, getHeight()));
 		del_btn.setPreferredSize(new Dimension(60, getHeight()));
 
 		edit_btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-//				Point p = edit_btn.getLocation();
-//				new JTableTestDialog(100, 180, jTableTest).setVisible(true);
-                JTable table = (JTable) SwingUtilities.getAncestorOfClass(JTable.class, (Component) e.getSource());
-                int row = table.getEditingRow();
-                int column = table.getEditingColumn();
-                //table.getCellEditor().stopCellEditing();
-                //((DefaultTableModel) table.getModel()).removeRow(row);
-            	if (e.getSource() == edit_btn) {
-            		System.out.println("edit_btn,row,column="+row+","+column);
-                }
+				// Point p = edit_btn.getLocation();
+				// new JTableTestDialog(100, 180, jTableTest).setVisible(true);
+				JTable table = (JTable) SwingUtilities.getAncestorOfClass(
+						JTable.class, (Component) e.getSource());
+				int row = table.getEditingRow();
+				int column = table.getEditingColumn();
+				// table.getCellEditor().stopCellEditing();
+				// ((DefaultTableModel) table.getModel()).removeRow(row);
+				if (e.getSource() == edit_btn) {
+					System.out.println("edit_btn,row,column=" + row + ","
+							+ column);
+				}
 			}
 		});
-		
+
 		del_btn.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-                JTable table = (JTable) SwingUtilities.getAncestorOfClass(JTable.class, (Component) e.getSource());
-                int row = table.getEditingRow();
-                int column = table.getEditingColumn();
-                //table.getCellEditor().stopCellEditing();
-                //((DefaultTableModel) table.getModel()).removeRow(row);
-            	if (e.getSource() == del_btn) {
-            		System.out.println("del_btn,row,column="+row+","+column);
-            		DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
-            		tableModel.removeRow(row); // 删除行
-                }
+				JTable table = (JTable) SwingUtilities.getAncestorOfClass(
+						JTable.class, (Component) e.getSource());
+				int row = table.getEditingRow();
+				int column = table.getEditingColumn();
+				// table.getCellEditor().stopCellEditing();
+				// ((DefaultTableModel) table.getModel()).removeRow(row);
+				if (e.getSource() == del_btn) {
+					System.out.println("del_btn,row,column=" + row + ","
+							+ column);
+					DefaultTableModel tableModel = (DefaultTableModel) table
+							.getModel();
+					tableModel.removeRow(row); // 删除行
+				}
 			}
 		});
 	}
 
-//	JTableTestCellEdit(JTableTest jTableTest) {
-//		this();
-//		this.jTableTest = jTableTest;
-//	}
+	// JTableTestCellEdit(JTableTest jTableTest) {
+	// this();
+	// this.jTableTest = jTableTest;
+	// }
 
 	public void addCellEditorListener(CellEditorListener l) {
 		System.out.println("addCellEditorListener=");
@@ -150,6 +154,5 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
 		System.out.println("getCellEditorValue=");
 		return edit_txf.getText();
 	}
-
 
 }

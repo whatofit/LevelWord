@@ -370,7 +370,7 @@ public class LevelWord extends JFrame {
 		TableColumnModel tcm = table.getColumnModel();
 		tcm.getColumn(3).setCellEditor(new DefaultCellEditor(comboBox));
 
-		//TableColumn tc = tcm.getColumn(0);
+		// TableColumn tc = tcm.getColumn(0);
 		TableColumn tc = table.getColumn("operate");
 		tc.setPreferredWidth(120);
 		tc.setCellRenderer(new WordTableCellRenderer());
