@@ -7,13 +7,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Utils {
-	// 1£¬ÑéÖ¤´«ÈëÂ·¾¶ÊÇ·ñÎªÕıÈ·µÄÂ·¾¶Ãû(WindowsÏµÍ³£¬ÆäËûÏµÍ³Î´Ê¹ÓÃ)
-	// ÑéÖ¤×Ö·û´®ÊÇ·ñÎªÕıÈ·Â·¾¶ÃûµÄÕıÔò±í´ïÊ½
+	// 1ï¼ŒéªŒè¯ä¼ å…¥è·¯å¾„æ˜¯å¦ä¸ºæ­£ç¡®çš„è·¯å¾„å(Windowsç³»ç»Ÿï¼Œå…¶ä»–ç³»ç»Ÿæœªä½¿ç”¨)
+	// éªŒè¯å­—ç¬¦ä¸²æ˜¯å¦ä¸ºæ­£ç¡®è·¯å¾„åçš„æ­£åˆ™è¡¨è¾¾å¼
 	private static String matches = "[A-Za-z]:\\\\[^:?\"><*]*";
 
-	// Í¨¹ı sPath.matches(matches) ·½·¨µÄ·µ»ØÖµÅĞ¶ÏÊÇ·ñÕıÈ·
-	// sPath ÎªÂ·¾¶×Ö·û´®
-	/** checkStringÊÇ·ñÎªnull»ò¿Õ×Ö·û´®"" */
+	// é€šè¿‡ sPath.matches(matches) æ–¹æ³•çš„è¿”å›å€¼åˆ¤æ–­æ˜¯å¦æ­£ç¡®
+	// sPath ä¸ºè·¯å¾„å­—ç¬¦ä¸²
+	/** checkStringæ˜¯å¦ä¸ºnullæˆ–ç©ºå­—ç¬¦ä¸²"" */
 	public static boolean isEmpty(String str) {
 		if (str == null || "".equalsIgnoreCase(str)) {
 			return true;
@@ -21,7 +21,7 @@ public class Utils {
 		return false;
 	}
 
-	/** »ñÈ¡ÎÄ¼şÃû³Æ£¬²»°üº¬À©Õ¹Ãû */
+	/** è·å–æ–‡ä»¶åç§°ï¼Œä¸åŒ…å«æ‰©å±•å */
 	public static String getFileName(String path) {
 		if (Utils.isEmpty(path)) {
 			return "";
@@ -40,7 +40,7 @@ public class Utils {
 	}
 
 	/**
-	 * ·Ö¸îÎÄ¼şÃû£¬²»°üº¬À©Õ¹Ãû "./vocabulary_ciba/00058-some.xml" ·Ö¸î³É£º00058ºÍsome
+	 * åˆ†å‰²æ–‡ä»¶åï¼Œä¸åŒ…å«æ‰©å±•å "./vocabulary_ciba/00058-some.xml" åˆ†å‰²æˆï¼š00058å’Œsome
 	 * */
 	public static String[] splitFileName(String path) {
 		if (Utils.isEmpty(path)) {
@@ -60,20 +60,20 @@ public class Utils {
 	}
 
 	/**
-	 * ÅĞ¶Ï×Ö·û´®ÖĞÊÇ·ñº¬ÓĞÒ»¶Ô¼âÀ¨ºÅÖĞ°üº¬ºº×Ö£¬Èç¹ûÓĞ£¬°Ñ¼âÀ¨ºÅÌæ»»ÎªÖĞÀ¨ºÅ
+	 * åˆ¤æ–­å­—ç¬¦ä¸²ä¸­æ˜¯å¦å«æœ‰ä¸€å¯¹å°–æ‹¬å·ä¸­åŒ…å«æ±‰å­—ï¼Œå¦‚æœæœ‰ï¼ŒæŠŠå°–æ‹¬å·æ›¿æ¢ä¸ºä¸­æ‹¬å·
 	 * 
-	 * ¹â£¬¹âÃ÷£»·¢¹âÌå£»ÈÕ¹â£¬ÀèÃ÷£»<Ê«>ÊÓÁ¦£¬ÑÛÉñ£» ¹â£¬¹âÃ÷£»·¢¹âÌå£»ÈÕ¹â£¬ÀèÃ÷£»[Ê«]ÊÓÁ¦£¬ÑÛÉñ£»
+	 * å…‰ï¼Œå…‰æ˜ï¼›å‘å…‰ä½“ï¼›æ—¥å…‰ï¼Œé»æ˜ï¼›<è¯—>è§†åŠ›ï¼Œçœ¼ç¥ï¼› å…‰ï¼Œå…‰æ˜ï¼›å‘å…‰ä½“ï¼›æ—¥å…‰ï¼Œé»æ˜ï¼›[è¯—]è§†åŠ›ï¼Œçœ¼ç¥ï¼›
 	 * 
 	 * @param str
-	 *            ´«ÈëµÄ×Ö·û´Ü
+	 *            ä¼ å…¥çš„å­—ç¬¦çªœ
 	 * @return
 	 */
 	// ^[\u2E80-\u9FFF]+$
-	// Æ¥ÅäËùÓĞ¶«ÑÇÇøµÄÓïÑÔ
+	// åŒ¹é…æ‰€æœ‰ä¸œäºšåŒºçš„è¯­è¨€
 	// ^[\u4E00-\u9FFF]+$
-	// Æ¥Åä¼òÌåºÍ·±Ìå
+	// åŒ¹é…ç®€ä½“å’Œç¹ä½“
 	// ^[\u4E00-\u9FA5]+$
-	// Æ¥Åä¼òÌå
+	// åŒ¹é…ç®€ä½“
 
 	public static String replaceAngleBrackets(String body) {
 		String regExp = "([<]{1}([\u0391-\uFFE5]+)[>]{1})";
@@ -98,7 +98,7 @@ public class Utils {
 		return body;
 	}
 
-	/** °ÑbodyÌí¼Óµ½filenameÎÄ¼şÄ©Î² */
+	/** æŠŠbodyæ·»åŠ åˆ°filenameæ–‡ä»¶æœ«å°¾ */
 	public static void writerFileTest(String filename, String body) {
 		FileWriter fw;
 		try {
@@ -113,18 +113,18 @@ public class Utils {
 		}
 	}
 
-	// 2£¬ÊµÏÖÉ¾³ıÎÄ¼şµÄ·½·¨
+	// 2ï¼Œå®ç°åˆ é™¤æ–‡ä»¶çš„æ–¹æ³•
 	/**
-	 * É¾³ıµ¥¸öÎÄ¼ş
+	 * åˆ é™¤å•ä¸ªæ–‡ä»¶
 	 * 
 	 * @param sPath
-	 *            ±»É¾³ıÎÄ¼şµÄÎÄ¼şÃû
-	 * @return µ¥¸öÎÄ¼şÉ¾³ı³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+	 *            è¢«åˆ é™¤æ–‡ä»¶çš„æ–‡ä»¶å
+	 * @return å•ä¸ªæ–‡ä»¶åˆ é™¤æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
 	 */
 	public static boolean deleteFile(String sPath) {
 		boolean flag = false;
 		File file = new File(sPath);
-		// Â·¾¶ÎªÎÄ¼şÇÒ²»Îª¿ÕÔò½øĞĞÉ¾³ı
+		// è·¯å¾„ä¸ºæ–‡ä»¶ä¸”ä¸ä¸ºç©ºåˆ™è¿›è¡Œåˆ é™¤
 		if (file.isFile() && file.exists()) {
 			file.delete();
 			flag = true;
@@ -132,58 +132,58 @@ public class Utils {
 		return flag;
 	}
 
-	// 3£¬Í¨ÓÃµÄÎÄ¼ş¼Ğ»òÎÄ¼şÉ¾³ı·½·¨£¬Ö±½Óµ÷ÓÃ´Ë·½·¨£¬¼´¿ÉÊµÏÖÉ¾³ıÎÄ¼ş¼Ğ»òÎÄ¼ş£¬°üÀ¨ÎÄ¼ş¼ĞÏÂµÄËùÓĞÎÄ¼ş
+	// 3ï¼Œé€šç”¨çš„æ–‡ä»¶å¤¹æˆ–æ–‡ä»¶åˆ é™¤æ–¹æ³•ï¼Œç›´æ¥è°ƒç”¨æ­¤æ–¹æ³•ï¼Œå³å¯å®ç°åˆ é™¤æ–‡ä»¶å¤¹æˆ–æ–‡ä»¶ï¼ŒåŒ…æ‹¬æ–‡ä»¶å¤¹ä¸‹çš„æ‰€æœ‰æ–‡ä»¶
 	/**
-	 * ¸ù¾İÂ·¾¶É¾³ıÖ¸¶¨µÄÄ¿Â¼»òÎÄ¼ş£¬ÎŞÂÛ´æÔÚÓë·ñ
+	 * æ ¹æ®è·¯å¾„åˆ é™¤æŒ‡å®šçš„ç›®å½•æˆ–æ–‡ä»¶ï¼Œæ— è®ºå­˜åœ¨ä¸å¦
 	 * 
 	 * @param sPath
-	 *            ÒªÉ¾³ıµÄÄ¿Â¼»òÎÄ¼ş
-	 * @return É¾³ı³É¹¦·µ»Ø true£¬·ñÔò·µ»Ø false¡£
+	 *            è¦åˆ é™¤çš„ç›®å½•æˆ–æ–‡ä»¶
+	 * @return åˆ é™¤æˆåŠŸè¿”å› trueï¼Œå¦åˆ™è¿”å› falseã€‚
 	 */
 	public static boolean DeleteFolder(String sPath) {
 		boolean flag = false;
 		File file = new File(sPath);
-		// ÅĞ¶ÏÄ¿Â¼»òÎÄ¼şÊÇ·ñ´æÔÚ
-		if (!file.exists()) { // ²»´æÔÚ·µ»Ø false
+		// åˆ¤æ–­ç›®å½•æˆ–æ–‡ä»¶æ˜¯å¦å­˜åœ¨
+		if (!file.exists()) { // ä¸å­˜åœ¨è¿”å› false
 			return flag;
 		} else {
-			// ÅĞ¶ÏÊÇ·ñÎªÎÄ¼ş
-			if (file.isFile()) { // ÎªÎÄ¼şÊ±µ÷ÓÃÉ¾³ıÎÄ¼ş·½·¨
+			// åˆ¤æ–­æ˜¯å¦ä¸ºæ–‡ä»¶
+			if (file.isFile()) { // ä¸ºæ–‡ä»¶æ—¶è°ƒç”¨åˆ é™¤æ–‡ä»¶æ–¹æ³•
 				return deleteFile(sPath);
-			} else { // ÎªÄ¿Â¼Ê±µ÷ÓÃÉ¾³ıÄ¿Â¼·½·¨
+			} else { // ä¸ºç›®å½•æ—¶è°ƒç”¨åˆ é™¤ç›®å½•æ–¹æ³•
 				return deleteDirectory(sPath);
 			}
 		}
 	}
 
-	// 4£¬ÊµÏÖÉ¾³ıÎÄ¼ş¼ĞµÄ·½·¨£¬
+	// 4ï¼Œå®ç°åˆ é™¤æ–‡ä»¶å¤¹çš„æ–¹æ³•ï¼Œ
 	/**
-	 * É¾³ıÄ¿Â¼£¨ÎÄ¼ş¼Ğ£©ÒÔ¼°Ä¿Â¼ÏÂµÄÎÄ¼ş
+	 * åˆ é™¤ç›®å½•ï¼ˆæ–‡ä»¶å¤¹ï¼‰ä»¥åŠç›®å½•ä¸‹çš„æ–‡ä»¶
 	 * 
 	 * @param sPath
-	 *            ±»É¾³ıÄ¿Â¼µÄÎÄ¼şÂ·¾¶
-	 * @return Ä¿Â¼É¾³ı³É¹¦·µ»Øtrue£¬·ñÔò·µ»Øfalse
+	 *            è¢«åˆ é™¤ç›®å½•çš„æ–‡ä»¶è·¯å¾„
+	 * @return ç›®å½•åˆ é™¤æˆåŠŸè¿”å›trueï¼Œå¦åˆ™è¿”å›false
 	 */
 	public static boolean deleteDirectory(String sPath) {
-		// Èç¹ûsPath²»ÒÔÎÄ¼ş·Ö¸ô·û½áÎ²£¬×Ô¶¯Ìí¼ÓÎÄ¼ş·Ö¸ô·û
+		// å¦‚æœsPathä¸ä»¥æ–‡ä»¶åˆ†éš”ç¬¦ç»“å°¾ï¼Œè‡ªåŠ¨æ·»åŠ æ–‡ä»¶åˆ†éš”ç¬¦
 		if (!sPath.endsWith(File.separator)) {
 			sPath = sPath + File.separator;
 		}
 		File dirFile = new File(sPath);
-		// Èç¹ûdir¶ÔÓ¦µÄÎÄ¼ş²»´æÔÚ£¬»òÕß²»ÊÇÒ»¸öÄ¿Â¼£¬ÔòÍË³ö
+		// å¦‚æœdirå¯¹åº”çš„æ–‡ä»¶ä¸å­˜åœ¨ï¼Œæˆ–è€…ä¸æ˜¯ä¸€ä¸ªç›®å½•ï¼Œåˆ™é€€å‡º
 		if (!dirFile.exists() || !dirFile.isDirectory()) {
 			return false;
 		}
 		boolean flag = true;
-		// É¾³ıÎÄ¼ş¼ĞÏÂµÄËùÓĞÎÄ¼ş(°üÀ¨×ÓÄ¿Â¼)
+		// åˆ é™¤æ–‡ä»¶å¤¹ä¸‹çš„æ‰€æœ‰æ–‡ä»¶(åŒ…æ‹¬å­ç›®å½•)
 		File[] files = dirFile.listFiles();
 		for (int i = 0; i < files.length; i++) {
-			// É¾³ı×ÓÎÄ¼ş
+			// åˆ é™¤å­æ–‡ä»¶
 			if (files[i].isFile()) {
 				flag = deleteFile(files[i].getAbsolutePath());
 				if (!flag)
 					break;
-			} // É¾³ı×ÓÄ¿Â¼
+			} // åˆ é™¤å­ç›®å½•
 			else {
 				flag = deleteDirectory(files[i].getAbsolutePath());
 				if (!flag)
@@ -192,7 +192,7 @@ public class Utils {
 		}
 		if (!flag)
 			return false;
-		// É¾³ıµ±Ç°Ä¿Â¼
+		// åˆ é™¤å½“å‰ç›®å½•
 		if (dirFile.delete()) {
 			return true;
 		} else {
@@ -223,7 +223,7 @@ public class Utils {
 		String mXmlWordFile = "./src/06169-corn.xml";
 		String body = FileUtil.readFile(mXmlWordFile);
 		System.out.println("--body---" + body);
-		// String body = "±íÊ¾<ÓÈÃÀ>µÄ";
+		// String body = "è¡¨ç¤º<å°¤ç¾>çš„";
 		String ret = Utils.replaceAngleBrackets(body);
 		System.out.println("--ret---" + ret);
 	}
