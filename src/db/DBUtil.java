@@ -141,6 +141,7 @@ public class DBUtil {
 			// 5.关闭连接
 			if (rs != null) {
 				rs.close();
+				rs = null;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -154,6 +155,7 @@ public class DBUtil {
 		try {
 			if (pStmt != null) {
 				pStmt.close();
+				pStmt = null;
 			}
 
 		} catch (Exception e) {
@@ -169,6 +171,7 @@ public class DBUtil {
 			// 5.关闭连接
 			if (mConn != null && !mConn.isClosed()) {
 				mConn.close();
+				mConn = null;
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -197,7 +200,7 @@ public class DBUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			closeStmt(pStmt);
+			// closeStmt(pStmt);查询后,不能立即关闭pStmt,因为本函数外要使用rs
 			// CloseConn();
 		}
 		return rs;
@@ -275,7 +278,7 @@ public class DBUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			closeStmt(pStmt);
+			closeStmt(pStmt); //可以关闭
 			// CloseConn();
 		}
 		return count;
@@ -322,7 +325,7 @@ public class DBUtil {
 			}
 			e.printStackTrace();
 		} finally {
-			closeStmt(pStmt);
+			closeStmt(pStmt); //可以关闭
 			// CloseConn();
 		}
 		return affectRowCount;
