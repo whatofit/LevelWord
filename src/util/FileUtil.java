@@ -31,7 +31,7 @@ public class FileUtil {
 	}
 
 	// "d:/sql.txt"
-	public static String readtxt(String filename)  {
+	public static String readtxt(String filename) {
 		BufferedReader br;
 		String str = "";
 		try {
