@@ -7,5 +7,6 @@
 	<classpathentry kind="lib" path="libs/fastjson-1.2.32.jar"/>
 	<classpathentry kind="lib" path="libs/dom4j-2.0.0-ALPHA-2.jar"/>
 	<classpathentry kind="lib" path="libs/sqlite-jdbc-3.8.11.2.jar"/>
+	<classpathentry kind="lib" path="libs/commons-lang3-3.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

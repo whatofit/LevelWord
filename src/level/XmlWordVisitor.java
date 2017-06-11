@@ -3,8 +3,9 @@ package level;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
+import java.util.List;
 
-import json.FastJsonUtil;
+import model.JsonWord;
 import model.Sent;
 import model.Word;
 
@@ -17,6 +18,10 @@ import org.xml.sax.InputSource;
 
 import util.FileUtil;
 import util.Utils;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 
 public class XmlWordVisitor extends VisitorSupport {
 	protected final String mFileFolderXml = "./vocabulary_ciba";
@@ -151,33 +156,46 @@ public class XmlWordVisitor extends VisitorSupport {
 		}
 	}
 
-	public Word getJsonWord(String line) {
+	public JsonWord getJsonWord(String line) {
 		String[] arr = line.trim().split("\t");
 		// line = line.trim().replaceFirst("\t", "-");
 		String jsonFileName = arr[0] + "-" + arr[1] + ".json";
 		String jsonWordFile = mFileFolderJson + File.separator + jsonFileName;
 		System.out.println(jsonWordFile);
-		try {
-			String body = FileUtil.readFile(jsonWordFile);
-			mWord = FastJsonUtil.json2obj(body, Word.class);
-			mWord.setWordFrequency(arr[0]);
-			System.out.println("getJsonWord,Key=" + mWord.getKey() + ",name＝"
-					+ mWord.getWordFrequency());
-			return mWord;
-		} catch (Exception ex) {
-			Utils.writerFileTest(mErrFileList, jsonWordFile);
-			Word word = new Word();
-			word.setWordFrequency(arr[0]);
-			word.setKey(arr[1]);
+		String body = FileUtil.readFile(jsonWordFile);
+//		System.out.println("body:"+body);
+		JSONObject jsonWord = JSONObject.parseObject(body);
+		//mWord = FastJsonUtil.json2obj(body, Word.class);
+		//mWord.setWordFrequency(arr[0]);
+		//mWord.setKey(arr[1]);
+//			System.out.println("getJsonWord,Key=" + mWord.getKey() + ",name＝"
+//					+ mWord.getWordFrequency());
+		JsonWord word = new JsonWord();
+		word.setFrequency(arr[0]);
+		word.setWord(arr[1]);
+		if (jsonWord == null) {
+			return word;	
+		}
+
+		Object objLocal = jsonWord.get("local");
+		if (objLocal ==null) {
 			return word;
 		}
+		if (objLocal instanceof JSONArray) {
+		}
+		//System.out.println("getJsonWord,local=" + objLocal);
+		//JSONObject.toJavaObject(objLocal, JsonWord.class);
+		List<JsonWord> words = JSON.parseArray(objLocal.toString(), JsonWord.class);
+		word = words.get(0);
+		word.setFrequency(arr[0]);
+		//word.setWord(arr[1]);
+		return word;
 	}
 
 	/**
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
 	}
 }
