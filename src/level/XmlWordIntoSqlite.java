@@ -1,25 +1,23 @@
 package level;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStreamReader;
 import java.util.Vector;
 
-import model.Word;
 import util.Utils;
 import db.DBUtil;
 
 /**
  * implementation
- *
+ * 
  * @author Dave
  * 
  * @version 1.0 2017/06/10
  */
-public class XmlWordIntoSqlite {
+public abstract class XmlWordIntoSqlite {
 	protected final String mWordListFile = "./src/vocabulary.txt";
-	protected final String mXmlFileFolder = "./vocabulary_ciba";
+	// protected final String mXmlFileFolder = "./vocabulary_ciba";
 	protected static String mErrFileList = "ErrFile.txt";
 	protected XmlWordVisitor wordParser = new XmlWordVisitor();
 	protected Vector vecWords = new Vector();
@@ -33,16 +31,16 @@ public class XmlWordIntoSqlite {
 		Utils.deleteFile(mErrFileList);
 	}
 
-	/**
-	 * 
-	 */
-	public void traversalDocumentByVisitor(String xmlWordFile) {
-		try {
-			wordParser.getDocument(xmlWordFile).accept(wordParser);
-		} catch (Exception ex) {
-			Utils.writerFileTest(mErrFileList, xmlWordFile);
-		}
-	}
+	// /**
+	// *
+	// */
+	// public void traversalDocumentByVisitor(String xmlWordFile) {
+	// try {
+	// wordParser.getDocument(xmlWordFile).accept(wordParser);
+	// } catch (Exception ex) {
+	// Utils.writerFileTest(mErrFileList, xmlWordFile);
+	// }
+	// }
 
 	// 根据filename中单词的顺序,读取vocabulary_ciba文件夹下的xml文件列表
 	public void xmlFiles2Words() {
@@ -52,21 +50,7 @@ public class XmlWordIntoSqlite {
 			BufferedReader dr = new BufferedReader(new InputStreamReader(fis));
 			String line = dr.readLine();
 			while (line != null) {
-				String[] arr = line.trim().split("\t");
-				// line = line.trim().replaceFirst("\t", "-");
-				String xmlFileName = arr[0] + "-" + arr[1] + ".xml";
-				String xmlWordFile = mXmlFileFolder + File.separator + xmlFileName;
-				System.out.println(xmlWordFile);
-				Word word;
-				try {
-					word = wordParser.getWord(xmlWordFile);
-				} catch (Exception ex) {
-					word = new Word();
-					word.setKey(arr[1]);
-					Utils.writerFileTest(mErrFileList, xmlWordFile);
-				}
-				word.setWordFrequency(arr[0]);
-				word2Vector(word);
+				word2Vector(line);
 				line = dr.readLine();
 			}
 
@@ -75,9 +59,8 @@ public class XmlWordIntoSqlite {
 		}
 	}
 
-	//子类中重写本函数
-	public void word2Vector(Word word) {
-	}
+	// 子类中重写本函数
+	public abstract void word2Vector(String line);
 
 	public int doInsert2DB(String sqlCreate, String sqlInsert) {
 		mSqlCreate = sqlCreate;

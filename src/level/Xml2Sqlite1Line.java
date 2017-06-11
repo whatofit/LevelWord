@@ -13,7 +13,8 @@ public class Xml2Sqlite1Line extends XmlWordIntoSqlite {
 	}
 
 	// 所有词性/词义在一行
-	public void word2Vector(Word word) {
+	public void word2Vector(String line) {
+		Word word = wordParser.getWord(line);
 		Vector vecWord = new Vector();
 		vecWord.add(word.getWordFrequency());
 		vecWord.add(word.getKey());

@@ -1,9 +1,10 @@
 package level;
 
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 
+import json.FastJsonUtil;
 import model.Sent;
 import model.Word;
 
@@ -18,6 +19,9 @@ import util.FileUtil;
 import util.Utils;
 
 public class XmlWordVisitor extends VisitorSupport {
+	protected final String mFileFolderXml = "./vocabulary_ciba";
+	protected final String mFileFolderJson = "./vocabulary_QQ";
+	protected static String mErrFileList = "ErrFile.txt";
 	private String mXmlWordFile = "";
 	// private Document doc;
 	private Word mWord;
@@ -124,13 +128,49 @@ public class XmlWordVisitor extends VisitorSupport {
 		}
 	}
 
-//	public Word getWord() {
-//		return mWord;
-//	}
-	
-	public Word getWord(String xmlWordFile) throws Exception {
-		getDocument(xmlWordFile).accept(this);
-		return mWord;
+	// public Word getWord() {
+	// return mWord;
+	// }
+
+	public Word getWord(String line) {
+		String[] arr = line.trim().split("\t");
+		// line = line.trim().replaceFirst("\t", "-");
+		String xmlFileName = arr[0] + "-" + arr[1] + ".xml";
+		String xmlWordFile = mFileFolderXml + File.separator + xmlFileName;
+		System.out.println(xmlWordFile);
+		try {
+			getDocument(xmlWordFile).accept(this);
+			mWord.setWordFrequency(arr[0]);
+			return mWord;
+		} catch (Exception ex) {
+			Utils.writerFileTest(mErrFileList, xmlWordFile);
+			Word word = new Word();
+			word.setWordFrequency(arr[0]);
+			word.setKey(arr[1]);
+			return word;
+		}
+	}
+
+	public Word getJsonWord(String line) {
+		String[] arr = line.trim().split("\t");
+		// line = line.trim().replaceFirst("\t", "-");
+		String jsonFileName = arr[0] + "-" + arr[1] + ".json";
+		String jsonWordFile = mFileFolderJson + File.separator + jsonFileName;
+		System.out.println(jsonWordFile);
+		try {
+			String body = FileUtil.readFile(jsonWordFile);
+			mWord = FastJsonUtil.json2obj(body, Word.class);
+			mWord.setWordFrequency(arr[0]);
+			System.out.println("getJsonWord,Key=" + mWord.getKey() + ",name＝"
+					+ mWord.getWordFrequency());
+			return mWord;
+		} catch (Exception ex) {
+			Utils.writerFileTest(mErrFileList, jsonWordFile);
+			Word word = new Word();
+			word.setWordFrequency(arr[0]);
+			word.setKey(arr[1]);
+			return word;
+		}
 	}
 
 	/**

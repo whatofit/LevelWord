@@ -12,7 +12,8 @@ public class Xml2SqliteJson1Line extends XmlWordIntoSqlite {
 	}
 
 	// 所有词性/词义在一行的json中
-	public void word2Vector(Word word) {
+	public void word2Vector(String line) {
+		Word word = wordParser.getWord(line);
 		String wordJson = FastJsonUtil.obj2json(word);
 		Vector vecWord = new Vector();
 		vecWord.add(word.getWordFrequency());

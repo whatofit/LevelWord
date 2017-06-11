@@ -6,21 +6,23 @@ import java.util.Vector;
 import model.Sent;
 import model.Word;
 
-public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite  {
+public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite {
 	public Xml2SqlitePOSsLine() {
 		super();
 	}
 
-	//每一个单词,插入词性个数条记录,词频/单词/音标等,都是重复的
-	public void word2Vector(Word word) {
+	// 每一个单词,插入词性个数条记录,词频/单词/音标等,都是重复的
+	public void word2Vector(String line) {
+		Word word = wordParser.getWord(line);
 		List<Sent> sents = word.getSents();
 		String sentence = "";
 		for (int i = 0; i < sents.size(); i++) {
 			Sent sent = sents.get(i);
 			if (!sentence.isEmpty()) {
-				//sentence = sentence + "||";
+				// sentence = sentence + "||";
 			}
-			sentence = sentence + (i+1) + ". " + sent.getOrig() + "/"+ sent.getTrans() + " ";
+			sentence = sentence + (i + 1) + ". " + sent.getOrig() + "/"
+					+ sent.getTrans() + " ";
 		}
 		List<String> partsOfSpeech = word.getPartsOfSpeech();
 		List<String> meaning = word.getMeaning();
@@ -33,15 +35,14 @@ public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite  {
 			vecWord.add(null);
 			vecWord.add(partsOfSpeech.get(i));
 			vecWord.add(meaning.get(i));
-			if (i== 0) {
+			if (i == 0) {
 				vecWord.add(sentence);
-			}else{
+			} else {
 				vecWord.add(null);
 			}
 			vecWords.add(vecWord);
 		}
 	}
-	
 
 	/**
 	 * @param args
@@ -58,4 +59,4 @@ public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite  {
 		}
 	}
 
- }
+}

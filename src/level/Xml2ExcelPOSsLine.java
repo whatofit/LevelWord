@@ -19,7 +19,8 @@ public class Xml2ExcelPOSsLine extends XmlWordIntoSqlite {
 	}
 
 	// 所有词性/词义在一行
-	public void word2Vector(Word word) {
+	public void word2Vector(String line) {
+		Word word = wordParser.getWord(line);
 		XlsUtil.addXLS(sheet, word, mRow);
 		if (word.getPartsOfSpeech().size() == 0) {
 			mRow += 1; // 累加写入excel下一个单词的起始位置
@@ -44,7 +45,7 @@ public class Xml2ExcelPOSsLine extends XmlWordIntoSqlite {
 			// book = Workbook.createWorkbook(new File("LevelDict.xls"));
 			// // 生成名为“第一页”的工作表，参数0表示这是第一页
 			// sheet = book.createSheet("vocabulary", 0);
-			
+
 			Xml2ExcelPOSsLine levelSqlite = new Xml2ExcelPOSsLine();
 			levelSqlite.xmlFiles2Words();
 			XlsUtil.closeXLS(book);
