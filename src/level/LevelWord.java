@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
@@ -29,6 +30,10 @@ import javax.swing.event.MouseInputListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+
+import com.genericsdao.bean.User;
+import com.genericsdao.daoimp.UserDaoImpl;
+import com.genericsdao.daoimp.WordDaoImpl;
 
 import db.DBUtil;
 
@@ -225,12 +230,15 @@ public class LevelWord extends JFrame {
 		// { "A4", "B4", "C4" }, { "A5", "B5", "C5" } }; // 数据
 		// String sqlDrop = "drop table if exists levelWordTable;";
 		// DBUtil.ExecuteUpdate(sqlDrop);
+//		WordDaoImpl imp = new WordDaoImpl();
+//		List<User> list = imp.select(t);
+		
 		final DBUtil dbMgr = new DBUtil();
 		String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
 		int count = dbMgr.executeUpdate(sqlCreate);
 		String sqlSelect = "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
 		ResultSet rs = dbMgr.executeQuery(sqlSelect);
-		// Object[][] tableCellValues = DBUtil.ResultSetToObjectArray(rs);
+//		 Object[][] tableCellValues = DBUtil.ResultSetToObjectArray(rs);
 		Vector titleVector = new Vector(); // headVector/column Names/表头集合
 		Vector cellsVector = new Vector(); // rowsVector/rows data/数据体集合
 		try {
@@ -478,6 +486,7 @@ public class LevelWord extends JFrame {
 		final JButton refreshButton = new JButton("刷新");
 		refreshButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
+						
 						tableModel.fireTableDataChanged();
 					}
 				});

@@ -278,7 +278,7 @@ public class DBUtil {
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
-			closeStmt(pStmt); //可以关闭
+			closeStmt(pStmt); // 可以关闭
 			// CloseConn();
 		}
 		return count;
@@ -325,7 +325,7 @@ public class DBUtil {
 			}
 			e.printStackTrace();
 		} finally {
-			closeStmt(pStmt); //可以关闭
+			closeStmt(pStmt); // 可以关闭
 			// CloseConn();
 		}
 		return affectRowCount;
