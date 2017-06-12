@@ -31,6 +31,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
+import model.Word;
+
 import com.genericsdao.bean.User;
 import com.genericsdao.daoimp.UserDaoImpl;
 import com.genericsdao.daoimp.WordDaoImpl;
@@ -230,38 +232,49 @@ public class LevelWord extends JFrame {
 		// { "A4", "B4", "C4" }, { "A5", "B5", "C5" } }; // 数据
 		// String sqlDrop = "drop table if exists levelWordTable;";
 		// DBUtil.ExecuteUpdate(sqlDrop);
-//		WordDaoImpl imp = new WordDaoImpl();
-//		List<User> list = imp.select(t);
+		final WordDaoImpl imp = new WordDaoImpl();
+		int affectRowCount = imp.create();
 		
 		final DBUtil dbMgr = new DBUtil();
-		String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
-		int count = dbMgr.executeUpdate(sqlCreate);
-		String sqlSelect = "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
-		ResultSet rs = dbMgr.executeQuery(sqlSelect);
-//		 Object[][] tableCellValues = DBUtil.ResultSetToObjectArray(rs);
-		Vector titleVector = new Vector(); // headVector/column Names/表头集合
-		Vector cellsVector = new Vector(); // rowsVector/rows data/数据体集合
-		try {
-			if (rs != null) {
-				ResultSetMetaData rsmd = rs.getMetaData();
-				for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-					titleVector.addElement(rsmd.getColumnName(i));// columnNames.add(rsmd.getColumnName(i));
-				}
-				while (rs.next()) {
-					Vector curRow = new Vector();
-					for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-						curRow.addElement(rs.getString(i));// curRow.add(rs.getString(i));
-					}
-					curRow.addElement("");
-					cellsVector.addElement(curRow); // rows.add(curRow);
-				}
-			}
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		titleVector.addElement("operate");
-
+		//String sqlCreate = "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
+//		int count = dbMgr.executeUpdate(sqlCreate);
+//		String sqlSelect = "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
+//		ResultSet rs = dbMgr.executeQuery(sqlSelect);
+////		 Object[][] tableCellValues = DBUtil.ResultSetToObjectArray(rs);
+//		Vector titleVector = new Vector(); // headVector/column Names/表头集合
+//		Vector cellsVector = new Vector(); // rowsVector/rows data/数据体集合
+//		try {
+//			if (rs != null) {
+//				ResultSetMetaData rsmd = rs.getMetaData();
+//				for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
+//					titleVector.addElement(rsmd.getColumnName(i));// columnNames.add(rsmd.getColumnName(i));
+//				}
+//				while (rs.next()) {
+//					Vector curRow = new Vector();
+//					for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
+//						curRow.addElement(rs.getString(i));// curRow.add(rs.getString(i));
+//					}
+//					curRow.addElement("");
+//					cellsVector.addElement(curRow); // rows.add(curRow);
+//				}
+//			}
+//		} catch (SQLException e1) {
+//			// TODO Auto-generated catch block
+//			e1.printStackTrace();
+//		}
+//		titleVector.addElement("operate");
+		
+		Vector titleVector = imp.getTableTitle(); // headVector/column Names/表头集合
+		Word word = new Word();
+		word.setWordFrequency("0007");
+		imp.insert(word);
+		word = new Word();
+		word.setWordFrequency("0009");
+		imp.insert(word);
+		word = new Word();
+		word.setWordFrequency("00201");
+		imp.insert(word);
+		Vector cellsVector = imp.selectAll(); // rowsVector/rows data/数据体集合
 		tableModel = new DefaultTableModel(cellsVector, titleVector) {
 			public boolean isCellEditable(int row, int column) {
 				return true;// 默认是true
@@ -486,7 +499,7 @@ public class LevelWord extends JFrame {
 		final JButton refreshButton = new JButton("刷新");
 		refreshButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
-						
+						tableModel.setDataVector(imp.selectAll(), imp.getTableTitle());
 						tableModel.fireTableDataChanged();
 					}
 				});
