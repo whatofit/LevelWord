@@ -12,9 +12,9 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 
 /**
- * xml工具类 Created by fanmingyou on 2017/06/08.
+ * xml工具类 Created by dave on 2017/06/08.
  * 
- * @author fanmingyou
+ * @author dave
  * @date 2017/06/08
  */
 public class Xml2Json {

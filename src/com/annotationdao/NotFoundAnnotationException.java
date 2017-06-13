@@ -3,7 +3,7 @@ package com.annotationdao;
 /**
  * 自定义异常类(继承运行时异常)
  * 
- * @author AlanLee
+ * @author dave
  * @version 2016/11/26
  */
 public class NotFoundAnnotationException extends RuntimeException {

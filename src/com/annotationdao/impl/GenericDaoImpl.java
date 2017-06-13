@@ -27,7 +27,7 @@ import com.annotationdao.dbc.JdbcDaoHelper;
 
 /**
  * 泛型DAO的JDBC实现
- * @author 杨信
+ * @author dave
  * @version 1.0
  */
 public class GenericDaoImpl<T> implements IGenericDao<T> {

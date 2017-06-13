@@ -14,7 +14,7 @@ import com.alibaba.fastjson.JSONObject;
 /**
  * xml工具类
  * 
- * @author fanmingyou
+ * @author dave
  * @date 2017-06-08
  */
 public class XmlToJson {

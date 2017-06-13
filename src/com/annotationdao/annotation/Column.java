@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 /**
  * 标识数据库字段的名称
- * @author 杨信
+ * @author dave
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
