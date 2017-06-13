@@ -1,14 +1,23 @@
 package com.genericsdao.daoimp;
 
+import java.beans.IntrospectionException;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.Vector;
 
-import com.genericsdao.dao.BaseDao;
+import com.genericsdao.dao.IBaseDao;
 import com.genericsdao.dbc.DBHelper;
 
-//ͨ通用DAO实现
+//ͨ通用DAO的实现
 
 //1.首先我们如果想对User表进行操作,那么我们首先需要获取User类型.告诉BaseDaoImp,我们当前是需要对User表进行操作.因此构造函数就是用来干这个的.
 //2. 当我们获取了User类型之后,如果想要对其进行操作,那么首先需要知道 sql 语句,因此我们需要对sql语句进行拼接.那么拼接过程中,我们需要知道User表内部到底声明了哪些变量.这样就需要使用反射机制.通过反射机制来获取 User实体类中声明的变量,然后对sql进行相关的拼接.那么getsql函数用来完成sql的拼接过程.
@@ -16,7 +25,9 @@ import com.genericsdao.dbc.DBHelper;
 //4.当获取了具体的值之后,我们就可以通过sql提供给我们的相关函数来执行sql语句了.
 
 //子类里面的T是给父类里面T赋值，子类里面的T是实参，父类里面的t是形参
-public class BaseDaoImpl<T> implements BaseDao<T> {
+
+//GenericDAOImpl
+public class BaseDaoImpl<T> implements IBaseDao<T> {
 
 	/** 操作常量 */
 	public static final String SQL_CREATE = "create";// 创建table
@@ -27,6 +38,7 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 
 	// 泛型的Class
 	private Class<T> EntityClass; // 获取实体类
+	// private Class<T> clazz;
 
 	private PreparedStatement statement;
 
@@ -35,6 +47,20 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 	private Object argType[];
 
 	private ResultSet rs;
+
+	// //仿照 DbUtils中的List results = (List) qr.query(conn,
+	// "select id,name from guestbook", new BeanListHandler(Guestbook.class));
+	// // 创建构造器,new BaseDaoImpl<User>(User.class),防止泛型擦除
+	// public BaseDaoImpl(Class<T> clazz) {
+	// super();
+	// this.clazz = clazz;
+	// }
+
+	// private String className;
+	// // 通过构造器 注入 类名
+	// public BaseDaoImpl(String className) {
+	// this.className = className;
+	// }
 
 	/*
 	 * 在父类中，要执行一段代码，执行的时间是在子类创建对象的时候，那么有两种解决方案 1、使用static代码块 2、利用父类的构造函数
@@ -155,7 +181,92 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 			DBHelper.release(statement, rs);
 		}
 		return obj;
+	}
 
+	@Override
+	public List<T> selectAll() {
+		List<T> list = new ArrayList<T>();
+		// 存储所有字段的信息
+		// 通过反射获得要查询的字段
+		StringBuffer fieldNames = new StringBuffer();
+		// 通过反射获取实体类中的所有变量
+		Field fields[] = EntityClass.getDeclaredFields();
+		for (int i = 0; fields != null && i < fields.length; i++) {
+			fields[i].setAccessible(true); // 这句话必须要有,否则会抛出异常.
+			String column = fields[i].getName();
+			fieldNames.append(column).append(",");
+		}
+		fieldNames.deleteCharAt(fieldNames.length() - 1);
+
+		// 拼装SQL
+		String sqlSel = "select " + fieldNames + " from "
+				+ EntityClass.getSimpleName();
+		// String sql = "select * from " + tableName;
+
+		try {
+			statement = DBHelper.getPreparedStatement(sqlSel);
+			rs = statement.executeQuery();
+			//Field[] tbFields = EntityClass.getDeclaredFields();
+			// while (rs.next()) {
+			// T t = EntityClass.newInstance();
+			// for (int i = 0; i < tbFields.length; i++) {
+			// tbFields[i].setAccessible(true);
+			// tbFields[i].set(t, rs.getObject(tbFields[i].getName()));
+			// }
+			// list.add(t);
+			// }
+			while (rs.next()) {
+				T t = EntityClass.newInstance();
+				initObject(t, fields, rs);
+				list.add(t);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBHelper.release(statement, rs);
+		}
+		return list;
+	}
+
+	/**
+	 * 根据结果集初始化对象
+	 */
+	private void initObject(T t, Field[] fields, ResultSet rs)
+			throws SQLException, IntrospectionException,
+			IllegalAccessException, InvocationTargetException {
+		for (Field field : fields) {
+			String propertyName = field.getName();
+			Object paramVal = null;
+			Class<?> clazzField = field.getType();
+			if (clazzField == String.class) {
+				paramVal = rs.getString(propertyName);
+			} else if (clazzField == short.class || clazzField == Short.class) {
+				paramVal = rs.getShort(propertyName);
+			} else if (clazzField == int.class || clazzField == Integer.class) {
+				paramVal = rs.getInt(propertyName);
+			} else if (clazzField == long.class || clazzField == Long.class) {
+				paramVal = rs.getLong(propertyName);
+			} else if (clazzField == float.class || clazzField == Float.class) {
+				paramVal = rs.getFloat(propertyName);
+			} else if (clazzField == double.class || clazzField == Double.class) {
+				paramVal = rs.getDouble(propertyName);
+			} else if (clazzField == boolean.class
+					|| clazzField == Boolean.class) {
+				paramVal = rs.getBoolean(propertyName);
+			} else if (clazzField == byte.class || clazzField == Byte.class) {
+				paramVal = rs.getByte(propertyName);
+			} else if (clazzField == char.class
+					|| clazzField == Character.class) {
+				paramVal = rs.getCharacterStream(propertyName);
+			} else if (clazzField == Date.class) {
+				paramVal = rs.getTimestamp(propertyName);
+			} else if (clazzField.isArray()) {
+				paramVal = rs.getString(propertyName).split(","); // 以逗号分隔的字符串
+			}
+			PropertyDescriptor pd = new PropertyDescriptor(propertyName,
+					t.getClass());
+			pd.getWriteMethod().invoke(t, paramVal);
+		}
 	}
 
 	// sql拼接函数 形如 : insert into User(id,username,password,email,grade)

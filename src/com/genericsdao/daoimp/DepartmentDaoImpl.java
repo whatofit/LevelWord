@@ -5,10 +5,10 @@ import java.io.Serializable;
 import java.util.Collection;
 
 import com.genericsdao.bean.Department;
-import com.genericsdao.dao.DepartmentDao;
+import com.genericsdao.dao.IDepartmentDao;
 
 //传递泛型
-public class DepartmentDaoImpl extends BaseDaoImpl<Department> implements DepartmentDao<Department>{
+public class DepartmentDaoImpl extends BaseDaoImpl<Department> implements IDepartmentDao<Department>{
 
 	@Override
 	public void deleteDepartmentById(Serializable id, String deleteMode) {

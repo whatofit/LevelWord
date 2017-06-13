@@ -8,13 +8,12 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Vector;
 
-import model.Word;
-
 import com.genericsdao.bean.User;
-import com.genericsdao.dao.WordDao;
+import com.genericsdao.bean.Word;
+import com.genericsdao.dao.IWordDao;
 import com.genericsdao.dbc.DBHelper;
 
-public class WordDaoImpl extends BaseDaoImpl<Word> implements WordDao {
+public class WordDaoImpl extends BaseDaoImpl<Word> implements IWordDao {
 	private Class<?> EntityClass;
 
 	private String sql;
@@ -44,13 +43,18 @@ public class WordDaoImpl extends BaseDaoImpl<Word> implements WordDao {
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
-		titleVector.addElement("operate");
+		titleVector.addElement("operate");//todo
 		return titleVector;
 	}
 
-	@Override
-	public Vector selectAll() {
+	public Vector selectAll2Vector() {
 		Vector cellsVector = new Vector(); // rowsVector/rows data/数据体集合
+//		List<Word> list = super.selectAll();
+//		// for(int i=0;i<list.size();i++)
+//		// {
+//		// cellsVector.add(list.get(i));
+//		// }
+//		cellsVector.addAll(list);
 		sql = "select * from " + EntityClass.getSimpleName() + ";";
 		try {
 			statement = DBHelper.getPreparedStatement(sql);

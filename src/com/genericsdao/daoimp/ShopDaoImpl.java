@@ -6,10 +6,10 @@ import java.sql.ResultSet;
 
 import com.genericsdao.bean.Shop;
 import com.genericsdao.bean.User;
-import com.genericsdao.dao.ShopDao;
+import com.genericsdao.dao.IShopDao;
 import com.genericsdao.dbc.DBHelper;
 
-public class ShopDaoImpl extends BaseDaoImpl<Shop> implements ShopDao {
+public class ShopDaoImpl extends BaseDaoImpl<Shop> implements IShopDao {
 	private Class<?> EntityClass;
 
 	private String sql;

@@ -2,6 +2,6 @@ package com.genericsdao.dao;
 
 import com.genericsdao.bean.Shop;
 
-public interface ShopDao extends BaseDao<Shop> {
+public interface IShopDao extends IBaseDao<Shop> {
 	Shop findById(int id);
 }

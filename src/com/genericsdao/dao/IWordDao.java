@@ -2,10 +2,9 @@ package com.genericsdao.dao;
 
 import java.util.Vector;
 
-import model.Word;
+import com.genericsdao.bean.Word;
 
 //Word Dao接口额外功能
-public interface WordDao extends BaseDao<Word> {
+public interface IWordDao extends IBaseDao<Word> {
 	Vector getTableTitle();
-	Vector selectAll();
 }

@@ -19,6 +19,9 @@ import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
+import com.genericsdao.bean.Word;
+import com.genericsdao.daoimp.WordDaoImpl;
+
 public class WordTableCellEditor extends JPanel implements TableCellEditor {
 	private static final long serialVersionUID = 5860619160549087886L;
 	// EventListenerList:保存EventListener 列表的类。
@@ -82,6 +85,12 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
 							+ column);
 					DefaultTableModel tableModel = (DefaultTableModel) table
 							.getModel();
+					String id = (String) tableModel.getValueAt(row,0);
+					System.out.println("del_btn,id=" + id);
+					Word word = new Word();
+					word.setId(id);
+					WordDaoImpl imp = new WordDaoImpl();
+					imp.delete(word);
 					tableModel.removeRow(row); // 删除行
 				}
 			}

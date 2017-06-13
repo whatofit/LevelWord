@@ -7,11 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.genericsdao.bean.User;
-import com.genericsdao.dao.UserDao;
+import com.genericsdao.dao.IUserDao;
 import com.genericsdao.dbc.DBHelper;
 
 //User DAO实现
-public class UserDaoImpl extends BaseDaoImpl<User> implements UserDao {
+//具体的DAO的实现
+public class UserDaoImpl extends BaseDaoImpl<User> implements IUserDao {
 
 	private Class<?> EntityClass;
 
