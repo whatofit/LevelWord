@@ -503,6 +503,18 @@ public class LevelWord extends JFrame {
 							tableModel.setValueAt(cTextField.getText(),
 									selectedRow, 2);
 							// table.setValueAt(arg0, arg1, arg2)
+							String id = (String) tableModel.getValueAt(
+									selectedRow, 0);
+							String freq2 = (String) tableModel.getValueAt(
+									selectedRow, 1);
+							String sents = (String) tableModel.getValueAt(
+									selectedRow, 8);
+							Word word = new Word();
+							word.setId(id);
+							word.setFrequency(freq2);
+							word.setSents(sents);
+							//其他字段没有设置，会被更新修改清空删除掉
+							imp.update(word);
 						}
 					}
 				});
