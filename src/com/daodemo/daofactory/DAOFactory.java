@@ -1,13 +1,13 @@
-package com.daodemo.dao.factory;
+package com.daodemo.daofactory;
 
 import com.daodemo.dao.IEmpDAO;
-import com.daodemo.dao.impl.EmpDAOProxy;
+import com.daodemo.daoimpl.EmpDAOProxyImpl;
 
 public class DAOFactory {
 	public static IEmpDAO getInstance() {
 		IEmpDAO dao = null;
 		try {
-			dao = new EmpDAOProxy();
+			dao = new EmpDAOProxyImpl();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

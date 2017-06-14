@@ -1,6 +1,6 @@
 package com.daodemo;
 
-import com.daodemo.dao.factory.DAOFactory;
+import com.daodemo.daofactory.DAOFactory;
 import com.daodemo.vo.Emp;
 
 //一、信息系统的开发架构

@@ -25,8 +25,9 @@ public interface IBaseDao<T> {
 	 * 
 	 * @param entities
 	 *            处于临时状态的实体的集合。
+	 * @return 
 	 */
-	// public void insert(Collection<T> entities);
+	 public int insert(Collection<T> entities);
 
 	/**
 	 * 通用类型的删除操作

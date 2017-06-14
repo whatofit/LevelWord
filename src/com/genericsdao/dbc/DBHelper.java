@@ -10,12 +10,12 @@ import java.sql.SQLException;
 public class DBHelper {
 
 	// sqlite
-	private static final String dbDriver = "org.sqlite.JDBC";
-	private static final String dbUrl = "jdbc:sqlite:";
-	private static final String DB_NAME = "GenericsDaoDB.db3"; // "c:/testDB.db3";
-															// //数据库名称
-	private static final String dbUser = "";
-	private static final String dbPwd = "";
+	private static final String mdbDriver = "org.sqlite.JDBC";
+	private static final String mdbUrl = "jdbc:sqlite:";
+	//数据库名称// "c:/testDB.db3";
+	private static final String mdbName = "GenericsDaoDB.db3";
+	private static final String mdbUser = "";
+	private static final String mdbPwd = "";
 
 	//mysql
 //	private static final String USER = "root";
@@ -23,23 +23,31 @@ public class DBHelper {
 //	private static final String dbDriver = "com.mysql.jdbc.Driver";
 //	private static final String URL = "jdbc:mysql://localhost:3306/usermanager";
 	
-	private static Connection con;
+	private static Connection mConn;
 
 	// 获取数据库连接对象
-	public static Connection getConnection() {
-		if (con == null) {
+	public static Connection getConnection(String dbName) {
+		if (mConn == null) {
 			try {
-				Class.forName(dbDriver);
-				con = DriverManager.getConnection(dbUrl+DB_NAME, dbUser, dbPwd);
+				Class.forName(mdbDriver);
+				String connDbName = mdbName;
+				if (dbName != null) {
+					connDbName = dbName; 
+				}
+				mConn = DriverManager.getConnection(mdbUrl+connDbName, mdbUser, mdbPwd);
 			} catch (ClassNotFoundException e) {
 				e.printStackTrace();
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		} else {
-			return con;
+			return mConn;
 		}
-		return con;
+		return mConn;
+	}
+	
+	public static Connection getConnection() {
+		return getConnection(null);
 	}
 
 	public static PreparedStatement getPreparedStatement(String sql)
@@ -66,9 +74,9 @@ public class DBHelper {
 				ps.close();
 				ps = null;
 			}
-			if (con != null) {
-				con.close();
-				con = null;
+			if (mConn != null) {
+				mConn.close();
+				mConn = null;
 			}
 		} catch (Exception e) {
 			

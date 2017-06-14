@@ -1,4 +1,4 @@
-package com.daodemo.dao.impl;
+package com.daodemo.daoimpl;
 
 import java.util.List;
 
@@ -6,11 +6,11 @@ import com.daodemo.dao.IEmpDAO;
 import com.daodemo.dbc.DatabaseConnection;
 import com.daodemo.vo.Emp;
 
-public class EmpDAOProxy implements IEmpDAO {
+public class EmpDAOProxyImpl implements IEmpDAO {
 	private DatabaseConnection dbc;
 	private IEmpDAO dao = null;
 	
-	public EmpDAOProxy() throws Exception {
+	public EmpDAOProxyImpl() throws Exception {
 		dbc = new DatabaseConnection();
 		dao = new EmpDAOImpl(dbc.getConnection());
 	}

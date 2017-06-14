@@ -10,6 +10,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Vector;
@@ -124,6 +125,45 @@ public class BaseDaoImpl<T> implements IBaseDao<T> {
 		}
 	}
 
+	@Override
+	public int insert(Collection<T> entities) {
+		int affectRowCount = -1;// 影响的行数
+		try {
+			sql = this.getSql(SQL_INSERT); // 获取sql.
+			/** 执行SQL预编译 **/
+			statement = DBHelper.getPreparedStatement(sql); // 实例化PreparedStatement.
+			/** 设置不自动提交，以便于在出现异常的时候数据库回滚 **/
+			DBHelper.getConnection().setAutoCommit(false);
+			// System.out.println(sql);
+//			for (int i = 0; i < entities.size(); i++) {
+//				T param = (T) entities..get(i);
+//				for (int j = 0; j < param.size(); j++) {
+//					statement.setObject(j + 1, param.get(j));
+//				}
+//				statement.addBatch();
+//			}
+			int[] arr = statement.executeBatch();
+			DBHelper.getConnection().commit();
+			affectRowCount = arr.length;
+			// System.out.println("成功了插入了" + affectRowCount + "行");
+			// System.out.println();
+		} catch (Exception e) {
+			if (DBHelper.getConnection() != null) {
+				try {
+					DBHelper.getConnection().rollback();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+			}
+			e.printStackTrace();
+		} finally {
+			DBHelper.release(statement, null); // 释放资源.
+		}
+		return affectRowCount;
+	}	
+	
+		
+	
 	@Override
 	public void delete(T t) {
 		sql = this.getSql(SQL_DELETE);
