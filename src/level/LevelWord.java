@@ -32,9 +32,12 @@ import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.MouseInputListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import com.genericsdao.bean.User;
 import com.genericsdao.bean.Word;
@@ -239,7 +242,6 @@ public class LevelWord extends JFrame {
 		final WordDaoImpl imp = new WordDaoImpl();
 		int affectRowCount = imp.create();
 
-		final DBUtil dbMgr = new DBUtil();
 		// String sqlCreate =
 		// "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
 		// int count = dbMgr.executeUpdate(sqlCreate);
@@ -286,17 +288,17 @@ public class LevelWord extends JFrame {
 														// data/数据体集合
 		tableModel = new DefaultTableModel(cellsVector, titleVector) {
 			public boolean isCellEditable(int row, int column) {
-				JTextField tf = new JTextField();
-				tf.addKeyListener(new KeyAdapter() {
-					public void keyReleased(KeyEvent e) {
-						event(e);
-					};
-				});
-				tf.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-				tf.setSelectionStart(0);
-				tf.setSelectionEnd(tf.getText().length());
-				table.getColumnModel().getColumn(column)
-						.setCellEditor(new DefaultCellEditor(tf));
+				// JTextField tf = new JTextField();
+				// tf.addKeyListener(new KeyAdapter() {
+				// public void keyReleased(KeyEvent e) {
+				// event(e);
+				// };
+				// });
+				// tf.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+				// tf.setSelectionStart(0);
+				// tf.setSelectionEnd(tf.getText().length());
+				// table.getColumnModel().getColumn(column)
+				// .setCellEditor(new DefaultCellEditor(tf));
 
 				return true;// 默认是true
 			}
@@ -317,12 +319,14 @@ public class LevelWord extends JFrame {
 					}
 					System.out.println("row:" + row + " ,column:" + column
 							+ " ,value:" + value);
-					System.out.println("e.getKeyCode:" +  e.getKeyCode());
-					System.out.println("KeyEvent.VK_ENTER:" +  KeyEvent.VK_ENTER);
+					System.out.println("e.getKeyCode:" + e.getKeyCode());
+					System.out
+							.println("KeyEvent.VK_ENTER:" + KeyEvent.VK_ENTER);
 					switch (e.getKeyCode()) {
 					case KeyEvent.VK_ENTER:
 						String id = (String) tableModel.getValueAt(row, 0);
-//						String rowColumn = (String) tableModel.getValueAt(row, column);
+						// String rowColumn = (String)
+						// tableModel.getValueAt(row, column);
 						String freq = (String) tableModel.getValueAt(row, 1);
 						Word word = new Word();
 						word.setId(id);
@@ -355,6 +359,23 @@ public class LevelWord extends JFrame {
 		table.addMouseListener(mouseInputListener);
 		table.addMouseMotionListener(mouseInputListener);
 		table.setCellSelectionEnabled(true);
+		table.getModel().addTableModelListener(new TableModelListener() {
+			@Override
+			public void tableChanged(TableModelEvent e) {
+				// 当引起TableModel改变的事件是UPDATE时并且是第二列时候:
+				// when table action is update.
+				int row = e.getFirstRow();
+				int column = e.getColumn();
+				System.out.println("tableChanged row:" + row + ",column:"+ column);
+				TableModel model = (TableModel) e.getSource();
+				String columnName = model.getColumnName(column);
+				System.out.println("tableChanged columnName:" + columnName);
+				Object data = model.getValueAt(row, column);
+				System.out.println("tableChanged,value:" + data);
+				if (e.getType() == TableModelEvent.UPDATE) {
+				}
+			}
+		});
 
 		// table.setFillsViewportHeight(true);
 		// 1) 设置列不可随容器组件大小变化自动调整宽度.
@@ -401,9 +422,9 @@ public class LevelWord extends JFrame {
 					Object oa = tableModel.getValueAt(selectedRow, 0);
 					Object ob = tableModel.getValueAt(selectedRow, 1);
 					Object oc = tableModel.getValueAt(selectedRow, 2);
-					System.out.println("getClickCount,oa=" + oa);
-					System.out.println("getClickCount,ob=" + ob);
-					System.out.println("getClickCount,oc=" + oc);
+					//System.out.println("getClickCount,oa=" + oa);
+					//System.out.println("getClickCount,ob=" + ob);
+					//System.out.println("getClickCount,oc=" + oc);
 					if (oa != null) {
 						aTextField.setText(oa.toString()); // 给文本框赋值
 					}
@@ -456,9 +477,10 @@ public class LevelWord extends JFrame {
 		final JButton addButton = new JButton("添加"); // 添加按钮
 		addButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
-						String sqlSelect = "select COUNT(*) as totalCount from levelWordTable where spelling = ? and partsOfSpeech=?";
+						String sqlSelect = "select COUNT(*) as totalCount from Word where spelling = ? and partsOfSpeech=?";
 						Object param[] = { bTextField.getText(),
 								aTextField.getText() };
+						DBUtil dbMgr = new DBUtil();
 						ResultSet rs = dbMgr.executeQuery(sqlSelect, param);
 						int totalCount = 0;
 						try {
@@ -475,7 +497,7 @@ public class LevelWord extends JFrame {
 							tableModel.addRow(rowValues); // 添加一行
 						} else if (totalCount == 1) { // update db
 							// 写数据库
-							String sqlUpdate = "update partsOfSpeech,meaning,exampleSentence from levelWordTable";
+							String sqlUpdate = "update partsOfSpeech,meaning,exampleSentence from Word;";
 							dbMgr.executeUpdate(sqlUpdate);
 						}
 						int rowCount = table.getRowCount() + 1; // 行数加上1
@@ -513,7 +535,7 @@ public class LevelWord extends JFrame {
 							word.setId(id);
 							word.setFrequency(freq2);
 							word.setSents(sents);
-							//其他字段没有设置，会被更新修改清空删除掉
+							// 其他字段没有设置，会被更新修改清空删除掉
 							imp.update(word);
 						}
 					}
@@ -526,11 +548,11 @@ public class LevelWord extends JFrame {
 						int selectedRow = table.getSelectedRow();// 获得选中行的索引
 						if (selectedRow != -1) // 存在选中行
 						{
-							String freq = (String) tableModel.getValueAt(
+							String id = (String) tableModel.getValueAt(
 									selectedRow, 0);
 							tableModel.removeRow(selectedRow); // 删除行
 							Word word = new Word();
-							word.setFrequency(freq);
+							word.setId(id);
 							imp.delete(word);
 						}
 					}
