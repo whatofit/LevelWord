@@ -3,7 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Word {
+public class XmlWord {
 	private String wordFrequency;
 	private String key; // 原词
 	private String ps; // 英式音标
@@ -39,7 +39,7 @@ public class Word {
 	// private String acceptation; //意义
 	private List<String> partsOfSpeech = new ArrayList<String>(); // 词性
 	private List<String> meaning = new ArrayList<String>(); // 意义
-	private List<Sent> sents = new ArrayList<Sent>(); // 例句
+	private List<XmlSent> sents = new ArrayList<XmlSent>(); // 例句
 
 	public String getWordFrequency() {
 		return wordFrequency;
@@ -116,24 +116,24 @@ public class Word {
 		this.meaning = meaning;
 	}
 
-	public List<Sent> getSents() {
+	public List<XmlSent> getSents() {
 		return sents;
 	}
 
-	public void setSents(List<Sent> sents) {
+	public void setSents(List<XmlSent> sents) {
 		this.sents = sents;
 	}
 
-	public void addSent(Sent sent) {
+	public void addSent(XmlSent sent) {
 		this.sents.add(sent);
 	}
 
 	public void addPathsOfSpeech(String partsOfSpeech) {
-		this.partsOfSpeech.add(partsOfSpeech);
+		this.partsOfSpeech.add(partsOfSpeech == null ? null : partsOfSpeech.trim());
 	}
 
 	public void addMeaning(String meaning) {
-		this.meaning.add(meaning);
+		this.meaning.add(meaning == null ? null : meaning.trim());
 	}
 
 	@Override
@@ -151,7 +151,7 @@ public class Word {
 		// }
 		// sb.append("sents =" + sents.toString());//例句
 		int i = 1;
-		for (Sent sent : sents) {
+		for (XmlSent sent : sents) {
 			sb.append(i + ".Orig =" + sent.getOrig());// 原词例句
 			sb.append(i + ".Trans =" + sent.getTrans());// 例句翻译
 			i++;
@@ -301,7 +301,7 @@ public class Word {
 		// 例句
 		int i = 1;
 		StringBuffer sb = new StringBuffer();
-		for (Sent sent : sents) {
+		for (XmlSent sent : sents) {
 			sb.append(i + ". " + sent.getOrig().trim());// 原词例句
 			sb.append("\r\n");
 			sb.append("   " + sent.getTrans().trim());// 例句翻译

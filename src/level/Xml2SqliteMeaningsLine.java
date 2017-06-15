@@ -3,8 +3,10 @@ package level;
 import java.util.List;
 import java.util.Vector;
 
-import model.Sent;
-import model.Word;
+import com.genericsdao.bean.Word;
+
+import model.XmlSent;
+import model.XmlWord;
 
 public class Xml2SqliteMeaningsLine extends XmlWordIntoSqlite {
 	protected final String regexSemicolon = "[；;]";// 以中文分号或英文分号分割
@@ -15,19 +17,19 @@ public class Xml2SqliteMeaningsLine extends XmlWordIntoSqlite {
 
 	// 每一个单词,以中文分号；分割词义,插入中文词义个数条记录,词频/单词/音标等,都是重复的
 	public void word2Vector(String line) {
-		Word word = wordParser.getWord(line);
-		List<Sent> sents = word.getSents();
+		XmlWord xmlWord = wordParser.getWord(line);
+		List<XmlSent> sents = xmlWord.getSents();
 		String sentence = "";
 		for (int i = 0; i < sents.size(); i++) {
-			Sent sent = sents.get(i);
+			XmlSent sent = sents.get(i);
 			if (!sentence.isEmpty()) {
 				// sentence = sentence + "||";
 			}
 			sentence = sentence + (i + 1) + ". " + sent.getOrig() + "/"
 					+ sent.getTrans() + " ";
 		}
-		List<String> partsOfSpeech = word.getPartsOfSpeech();
-		List<String> meaning = word.getMeaning();
+		List<String> partsOfSpeech = xmlWord.getPartsOfSpeech();
+		List<String> meaning = xmlWord.getMeaning();
 		for (int i = 0; i < meaning.size(); i++) {
 			// String meanings =
 			// "采用（某种方式）；穿着，带着；（表示位置）在…里面，（表示领域，范围）在…以内；（表示品质、能力等）在…之中；";
@@ -37,20 +39,21 @@ public class Xml2SqliteMeaningsLine extends XmlWordIntoSqlite {
 				// System.out.println("meanings,regex="+
 				// Arrays.toString(acceptation));
 				// System.out.println("meanings,regex="+ acceptation[i]);
-				Vector vecWord = new Vector();
-				vecWord.add(word.getWordFrequency());
-				vecWord.add(word.getKey());
-				vecWord.add(word.getPs());
-				vecWord.add(word.getPs2());
-				vecWord.add(null);
-				vecWord.add(partsOfSpeech.get(i));
-				vecWord.add(acceptation[j]);
+				Word dbWord = new Word();
+				dbWord.setId(vecWords.size()+"");
+				dbWord.setFrequency(xmlWord.getWordFrequency());
+				dbWord.setSpelling(xmlWord.getKey());
+				dbWord.setPhoneticDJ(xmlWord.getPs());
+				dbWord.setPhoneticKK(xmlWord.getPs2());
+				dbWord.setLevel(null);
+				dbWord.setPartsOfSpeech(partsOfSpeech.get(i));
+				dbWord.setMeanings(acceptation[j]);
 				if (i == 0 && j == 0) {
-					vecWord.add(sentence);// 例句只放在第一条记录里
+					dbWord.setSents(sentence);// 例句只放在第一条记录里
 				} else {
-					vecWord.add(null);
+					dbWord.setSents(null);
 				}
-				vecWords.add(vecWord);
+				vecWords.add(dbWord);
 			}
 		}
 	}
@@ -62,9 +65,7 @@ public class Xml2SqliteMeaningsLine extends XmlWordIntoSqlite {
 		try {
 			Xml2SqliteMeaningsLine levelSqlite = new Xml2SqliteMeaningsLine();
 			levelSqlite.xmlFiles2Words();
-			String sqlCreate = "CREATE TABLE IF NOT EXISTS LevelWordTab (frequency,spelling,DJ,KK,level,partsOfSpeech,Meaning,sents);";
-			String sqlInsert = "INSERT INTO LevelWordTab VALUES(?,?,?,?,?,?,?,?)";
-			levelSqlite.doInsert2DB(sqlCreate, sqlInsert);
+			levelSqlite.doInsert2DB();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

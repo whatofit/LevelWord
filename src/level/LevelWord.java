@@ -44,8 +44,6 @@ import com.genericsdao.bean.Word;
 import com.genericsdao.daoimp.UserDaoImpl;
 import com.genericsdao.daoimp.WordDaoImpl;
 
-import db.DBUtil;
-
 /*
  JTable常见用法细则 
  JTable是Swing编程中很常用的控件,这里总结了一些常用方法以备查阅.
@@ -239,8 +237,8 @@ public class LevelWord extends JFrame {
 		// { "A4", "B4", "C4" }, { "A5", "B5", "C5" } }; // 数据
 		// String sqlDrop = "drop table if exists levelWordTable;";
 		// DBUtil.ExecuteUpdate(sqlDrop);
-		final WordDaoImpl imp = new WordDaoImpl();
-		int affectRowCount = imp.create();
+		final WordDaoImpl wordDao = new WordDaoImpl();
+		int affectRowCount = wordDao.create();
 
 		// String sqlCreate =
 		// "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
@@ -273,7 +271,7 @@ public class LevelWord extends JFrame {
 		// }
 		// titleVector.addElement("operate");
 
-		Vector titleVector = imp.getTableTitle(); // headVector/column
+		Vector titleVector = wordDao.getTableTitle(); // headVector/column
 													// Names/表头集合
 													// Word word = new Word();
 		// word.setFrequency("0007");
@@ -284,7 +282,7 @@ public class LevelWord extends JFrame {
 		// word = new Word();
 		// word.setFrequency("00201");
 		// imp.insert(word);
-		Vector cellsVector = imp.selectAll2Vector(); // rowsVector/rows
+		Vector cellsVector = wordDao.selectAll2Vector(); // rowsVector/rows
 														// data/数据体集合
 		tableModel = new DefaultTableModel(cellsVector, titleVector) {
 			public boolean isCellEditable(int row, int column) {
@@ -331,7 +329,7 @@ public class LevelWord extends JFrame {
 						Word word = new Word();
 						word.setId(id);
 						word.setFrequency(freq);
-						imp.update(word);
+						wordDao.update(word);
 						break;
 					case KeyEvent.VK_SPACE:
 						break;
@@ -477,6 +475,7 @@ public class LevelWord extends JFrame {
 		final JButton addButton = new JButton("添加"); // 添加按钮
 		addButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
+/*
 						String sqlSelect = "select COUNT(*) as totalCount from Word where spelling = ? and partsOfSpeech=?";
 						Object param[] = { bTextField.getText(),
 								aTextField.getText() };
@@ -500,6 +499,19 @@ public class LevelWord extends JFrame {
 							String sqlUpdate = "update partsOfSpeech,meaning,exampleSentence from Word;";
 							dbMgr.executeUpdate(sqlUpdate);
 						}
+*/
+						//查数据库中是否有相同拼写及词性的记录
+						//若不存在,则插入;若存在,则更新(全部字段还是指定字段)/或先删除,后插入,Id会变,
+//						Word word = new Word();
+//						word.setId("");
+//						word.setFrequency("");
+//						word.setSpelling("Spelling");
+//						word.setLevel("9");
+//						wordDao.select(word);
+//						wordDao.insert(word);
+//						wordDao.update(word);
+						tableModel.addRow(new Object[] { "sitinspring",
+								"35", "Boss" });
 						int rowCount = table.getRowCount() + 1; // 行数加上1
 						// aTextField.setText("A" + rowCount);
 						// bTextField.setText("B" + rowCount);
@@ -536,7 +548,7 @@ public class LevelWord extends JFrame {
 							word.setFrequency(freq2);
 							word.setSents(sents);
 							// 其他字段没有设置，会被更新修改清空删除掉
-							imp.update(word);
+							wordDao.update(word);
 						}
 					}
 				});
@@ -553,7 +565,7 @@ public class LevelWord extends JFrame {
 							tableModel.removeRow(selectedRow); // 删除行
 							Word word = new Word();
 							word.setId(id);
-							imp.delete(word);
+							wordDao.delete(word);
 						}
 					}
 				});
@@ -573,7 +585,7 @@ public class LevelWord extends JFrame {
 							word.setFrequency("" + (selectedRow + 1));
 							word.setSpelling("Spelling");
 							word.setLevel("9");
-							imp.insert(word);
+							wordDao.insert(word);
 							tableModel.addRow(new Object[] { "sitinspring",
 									"35", "Boss" });
 						}
@@ -584,8 +596,8 @@ public class LevelWord extends JFrame {
 		final JButton refreshButton = new JButton("刷新");
 		refreshButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
-						tableModel.setDataVector(imp.selectAll2Vector(),
-								imp.getTableTitle());
+						tableModel.setDataVector(wordDao.selectAll2Vector(),
+								wordDao.getTableTitle());
 						tableModel.fireTableDataChanged();
 						setTableCol();
 					}

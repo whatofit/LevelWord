@@ -6,8 +6,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 import model.JsonWord;
-import model.Sent;
-import model.Word;
+import model.XmlSent;
+import model.XmlWord;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -22,6 +22,7 @@ import util.Utils;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.genericsdao.bean.Word;
 
 public class XmlWordVisitor extends VisitorSupport {
 	protected final String mFileFolderXml = "./vocabulary_ciba";
@@ -29,9 +30,9 @@ public class XmlWordVisitor extends VisitorSupport {
 	protected static String mErrFileList = "ErrFile.txt";
 	private String mXmlWordFile = "";
 	// private Document doc;
-	private Word mWord;
+	private XmlWord mWord;
 	// private List<Sent> sents = new ArrayList<Sent>();
-	private Sent sent = null;
+	private XmlSent sent = null;
 	// private String curPos; // 当前词性
 	// 用来存放每次遍历后的元素名称(节点名称)
 	private String tagName;
@@ -65,7 +66,7 @@ public class XmlWordVisitor extends VisitorSupport {
 			document = saxReader.read(new InputSource(new ByteArrayInputStream(
 					retXml.getBytes("utf-8"))));
 		} catch (DocumentException e) {
-			mWord = new Word();
+			mWord = new XmlWord();
 			String[] name2 = Utils.splitFileName(mXmlWordFile);
 			mWord.setWordFrequency(name2[0]);
 			mWord.setKey(name2[1]);
@@ -123,10 +124,10 @@ public class XmlWordVisitor extends VisitorSupport {
 			String qName = node.getName();
 			if (qName.equals("sent")) {
 				// System.out.println("-----qName.equals(sent)---");
-				sent = new Sent();
+				sent = new XmlSent();
 			} else if (qName.equals("dict")) {
 				// System.out.println("-----qName.equals(dict)---");
-				mWord = new Word();
+				mWord = new XmlWord();
 				// System.out.println("--------------visit()--new Word()");
 			}
 			tagName = qName;
@@ -137,7 +138,7 @@ public class XmlWordVisitor extends VisitorSupport {
 	// return mWord;
 	// }
 
-	public Word getWord(String line) {
+	public XmlWord getWord(String line) {
 		String[] arr = line.trim().split("\t");
 		// line = line.trim().replaceFirst("\t", "-");
 		String xmlFileName = arr[0] + "-" + arr[1] + ".xml";
@@ -149,7 +150,7 @@ public class XmlWordVisitor extends VisitorSupport {
 			return mWord;
 		} catch (Exception ex) {
 			Utils.writerFileTest(mErrFileList, xmlWordFile);
-			Word word = new Word();
+			XmlWord word = new XmlWord();
 			word.setWordFrequency(arr[0]);
 			word.setKey(arr[1]);
 			return word;

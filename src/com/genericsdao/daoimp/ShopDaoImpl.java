@@ -1,8 +1,6 @@
 package com.genericsdao.daoimp;
 
 import java.lang.reflect.ParameterizedType;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 import com.genericsdao.bean.Shop;
 import com.genericsdao.bean.User;
@@ -10,27 +8,17 @@ import com.genericsdao.dao.IShopDao;
 import com.genericsdao.dbc.DBHelper;
 
 public class ShopDaoImpl extends BaseDaoImpl<Shop> implements IShopDao {
-	private Class<?> EntityClass;
-
-	private String sql;
-
-	private PreparedStatement statement;
-
-	private ResultSet rs;
-
-	private Shop shop;
 	
 	public ShopDaoImpl() {
-
 		ParameterizedType type = (ParameterizedType) getClass()
 				.getGenericSuperclass();
-		EntityClass = (Class<?>) type.getActualTypeArguments()[0];
+		EntityClass = (Class<Shop>) type.getActualTypeArguments()[0];
 	}
 
 	@Override
 	public Shop findById(int id) {
 		StringBuffer b = new StringBuffer();
-		shop = new Shop();
+		Shop shop= new Shop();
 		sql = b.append("select * from " + EntityClass.getSimpleName() + " WHERE id=?").toString();
 		try {
 			statement = DBHelper.getPreparedStatement(sql);

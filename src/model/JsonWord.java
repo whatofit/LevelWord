@@ -6,6 +6,8 @@ import java.util.Vector;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 
+import com.genericsdao.bean.Word;
+
 class JsonDes {
 	private String p;// = ""; // 词性
 	private String d;// = ""; // 词义
@@ -195,9 +197,9 @@ public class JsonWord {
 	}
 
 	//
-	public void add2Vector(Vector vecWords, JsonWord word) {
-		List<JsonDes> desList = word.getDes();
-		List<JsonSen> senList = word.getSen();
+	public void add2Vector(Vector vecWords, JsonWord jsonWord) {
+		List<JsonDes> desList = jsonWord.getDes();
+		List<JsonSen> senList = jsonWord.getSen();
 		for (int m = 0; m < senList.size(); m++) {// 把本单词的例句拼接后,与词性/词义关联
 			JsonSen sen = senList.get(m);
 			List<JsonS> sList = sen.getS();
@@ -221,24 +223,30 @@ public class JsonWord {
 			}
 		}
 		if (desList.size() == 0) {
-			Vector vecWord = new Vector();
-			vecWord.add(word.getFrequency());// 词频
-			vecWord.add(word.getWord());// 单词
-			vecWords.add(vecWord);
+			Word dbWord = new Word();
+			dbWord.setId(vecWords.size()+"");
+			dbWord.setFrequency(jsonWord.getFrequency());// 词频
+			dbWord.setSpelling(jsonWord.getWord());// 单词
+			vecWords.add(dbWord);
 		} else {
-			List<String> phoList = word.getPho();
+			List<String> phoList = jsonWord.getPho();
 			for (int i = 0; i < desList.size(); i++) {
 				JsonDes des = desList.get(i);
-				Vector vecWord = new Vector();
-				vecWord.add(word.getFrequency());// 词频
-				vecWord.add(StringEscapeUtils.unescapeHtml3(word.getWord()));// 单词
-				vecWord.add(StringEscapeUtils.unescapeHtml3(phoList.get(0)));// 英语音标
-				vecWord.add(null); // 美语音标
-				vecWord.add(null); // level
-				vecWord.add(StringEscapeUtils.unescapeHtml3(des.getP()));// 词性
-				vecWord.add(StringEscapeUtils.unescapeHtml3(des.getD()));// 词义列表
-				vecWord.add(StringEscapeUtils.unescapeHtml3(des.getS()));// 本词性对应的所有中英文例句
-				vecWords.add(vecWord);
+				Word dbWord = new Word();
+				dbWord.setId(vecWords.size()+"");
+				dbWord.setFrequency(jsonWord.getFrequency());
+				dbWord.setSpelling(StringEscapeUtils.unescapeHtml3(jsonWord.getWord()));// 单词
+				dbWord.setPhoneticDJ(StringEscapeUtils.unescapeHtml3(phoList.get(0)));// 英语音标
+				dbWord.setPhoneticKK(null); // 美语音标
+				dbWord.setLevel(null);
+				dbWord.setPartsOfSpeech(StringEscapeUtils.unescapeHtml3(des.getP()));// 词性
+				dbWord.setMeanings(StringEscapeUtils.unescapeHtml3(des.getD()));// 词义列表
+				if (i == 0) {
+					dbWord.setSents(StringEscapeUtils.unescapeHtml3(des.getS()));// 本词性对应的所有中英文例句
+				} else {
+					dbWord.setSents(null);
+				}
+				vecWords.add(dbWord);
 			}
 		}
 	}

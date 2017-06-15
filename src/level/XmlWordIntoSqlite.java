@@ -6,7 +6,8 @@ import java.io.InputStreamReader;
 import java.util.Vector;
 
 import util.Utils;
-import db.DBUtil;
+
+import com.genericsdao.daoimp.WordDaoImpl;
 
 /**
  * implementation
@@ -21,8 +22,6 @@ public abstract class XmlWordIntoSqlite {
 	protected static String mErrFileList = "ErrFile.txt";
 	protected XmlWordVisitor wordParser = new XmlWordVisitor();
 	protected Vector vecWords = new Vector();
-	protected String mSqlCreate = "";
-	protected String mSqlInsert = "";
 
 	// 1.读xml单词文件
 	// 2.解析成JavaBean/Model
@@ -61,7 +60,7 @@ public abstract class XmlWordIntoSqlite {
 
 	// 子类中重写本函数
 	public abstract void word2Vector(String line);
-
+/*
 	public int doInsert2DB(String sqlCreate, String sqlInsert) {
 		mSqlCreate = sqlCreate;
 		mSqlInsert = sqlInsert;
@@ -73,6 +72,18 @@ public abstract class XmlWordIntoSqlite {
 		int affectRowCount = dbMgr.executeBatchInsert(mSqlInsert, vecWords);
 		System.out.println("affectRowCount=" + affectRowCount);
 		dbMgr.closeConn();
+		return affectRowCount;
+	}
+*/
+
+	public int doInsert2DB() {
+		WordDaoImpl wordDao = new WordDaoImpl();
+		int nCount = wordDao.create();
+		if (nCount != 1) {
+			System.out.println("Xml2JsonSqlite mSqlCreate nCount=" + nCount);
+		}
+		int affectRowCount = wordDao.insert(vecWords);
+		System.out.println("affectRowCount=" + affectRowCount);
 		return affectRowCount;
 	}
 

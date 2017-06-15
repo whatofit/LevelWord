@@ -114,6 +114,13 @@ public interface IBaseDao<T> {
 	 * @return
 	 */
 	public List<T> selectAll();
+	
+	/**
+	 * 查询记录总条数(可为生成Id用)
+	 * 
+	 * @return
+	 */
+	public int selectTotalCount();
 
 	/**
 	 * 使用SQL语句检索数据

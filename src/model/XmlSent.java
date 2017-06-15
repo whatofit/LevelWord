@@ -1,6 +1,6 @@
 package model;
 
-public class Sent {
+public class XmlSent {
 
 	private String orig; // 原词
 	private String pronUrl; // 发音地址

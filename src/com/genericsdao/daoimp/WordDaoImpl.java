@@ -1,33 +1,22 @@
 package com.genericsdao.daoimp;
 
 import java.lang.reflect.ParameterizedType;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Vector;
 
-import com.genericsdao.bean.User;
 import com.genericsdao.bean.Word;
 import com.genericsdao.dao.IWordDao;
 import com.genericsdao.dbc.DBHelper;
 
 public class WordDaoImpl extends BaseDaoImpl<Word> implements IWordDao {
-	private Class<?> EntityClass;
-
-	private String sql;
-
-	private PreparedStatement statement;
-
-	private ResultSet rs;
-
-	private List<User> list;
+	//private Class<?> EntityClass;
 
 	public WordDaoImpl() {
 		ParameterizedType type = (ParameterizedType) getClass()
 				.getGenericSuperclass();
-		EntityClass = (Class<?>) type.getActualTypeArguments()[0];
+		EntityClass = (Class<Word>) type.getActualTypeArguments()[0];
 	}
 
 	@Override
@@ -80,7 +69,6 @@ public class WordDaoImpl extends BaseDaoImpl<Word> implements IWordDao {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
 
 	}
 

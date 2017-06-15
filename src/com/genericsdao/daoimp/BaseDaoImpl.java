@@ -7,13 +7,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.ParameterizedType;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Vector;
 
 import com.genericsdao.dao.IBaseDao;
 import com.genericsdao.dbc.DBHelper;
@@ -38,20 +37,21 @@ public class BaseDaoImpl<T> implements IBaseDao<T> {
 	public static final String SQL_SELECT = "select";
 
 	// 泛型的Class
-	private Class<T> EntityClass; // 获取实体类
-	// private Class<T> clazz;
+	protected Class<T> EntityClass; // 获取实体类
+	// protected Class<T> clazz;
 
-	private PreparedStatement statement;
+	protected PreparedStatement statement;
 
-	private String sql;
+	protected String sql;
 
-	private Object argType[];
+	protected Object argType[];
 
-	private ResultSet rs;
+	protected ResultSet rs;
 
 	// //仿照 DbUtils中的List results = (List) qr.query(conn,
 	// "select id,name from guestbook", new BeanListHandler(Guestbook.class));
 	// // 创建构造器,new BaseDaoImpl<User>(User.class),防止泛型擦除
+
 	// public BaseDaoImpl(Class<T> clazz) {
 	// super();
 	// this.clazz = clazz;
@@ -111,10 +111,11 @@ public class BaseDaoImpl<T> implements IBaseDao<T> {
 	@Override
 	public void insert(T t) {
 		sql = this.getSql(SQL_INSERT); // 获取sql.
+		System.out.println(sql);
 		// 赋值.
 		try {
-			argType = setArgs(t, SQL_INSERT);
 			statement = DBHelper.getPreparedStatement(sql); // 实例化PreparedStatement.
+			argType = setArgs(t, SQL_INSERT);
 			// 为sql语句赋值.
 			statement = DBHelper.setPreparedStatementParam(statement, argType);
 			statement.executeUpdate(); // 执行语句.
@@ -134,14 +135,13 @@ public class BaseDaoImpl<T> implements IBaseDao<T> {
 			statement = DBHelper.getPreparedStatement(sql); // 实例化PreparedStatement.
 			/** 设置不自动提交，以便于在出现异常的时候数据库回滚 **/
 			DBHelper.getConnection().setAutoCommit(false);
-			// System.out.println(sql);
-//			for (int i = 0; i < entities.size(); i++) {
-//				T param = (T) entities..get(i);
-//				for (int j = 0; j < param.size(); j++) {
-//					statement.setObject(j + 1, param.get(j));
-//				}
-//				statement.addBatch();
-//			}
+			Iterator<T> it = entities.iterator();
+			while (it.hasNext()) {
+				T t = it.next();
+				argType = setArgs(t, SQL_INSERT);
+				statement = DBHelper.setPreparedStatementParam(statement, argType);
+				statement.addBatch();
+			}
 			int[] arr = statement.executeBatch();
 			DBHelper.getConnection().commit();
 			affectRowCount = arr.length;
@@ -160,10 +160,8 @@ public class BaseDaoImpl<T> implements IBaseDao<T> {
 			DBHelper.release(statement, null); // 释放资源.
 		}
 		return affectRowCount;
-	}	
-	
-		
-	
+	}
+
 	@Override
 	public void delete(T t) {
 		sql = this.getSql(SQL_DELETE);
@@ -246,7 +244,7 @@ public class BaseDaoImpl<T> implements IBaseDao<T> {
 		try {
 			statement = DBHelper.getPreparedStatement(sqlSel);
 			rs = statement.executeQuery();
-			//Field[] tbFields = EntityClass.getDeclaredFields();
+			// Field[] tbFields = EntityClass.getDeclaredFields();
 			// while (rs.next()) {
 			// T t = EntityClass.newInstance();
 			// for (int i = 0; i < tbFields.length; i++) {
@@ -266,6 +264,26 @@ public class BaseDaoImpl<T> implements IBaseDao<T> {
 			DBHelper.release(statement, rs);
 		}
 		return list;
+	}
+	
+	/**/
+	public int selectTotalCount(){
+		int totalCount = 0;
+		try {
+			// 拼装SQL
+			sql = "select count(*) as totalCount  from " + EntityClass.getSimpleName() + ";";
+			statement = DBHelper.getPreparedStatement(sql);
+			rs = statement.executeQuery();
+			if (rs.next()) {
+				//totalCount = rs.getInt(0);
+				totalCount = rs.getInt("totalCount");
+	        }
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			DBHelper.release(statement, rs);
+		}
+		return totalCount;
 	}
 
 	/**

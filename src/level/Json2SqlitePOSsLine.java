@@ -20,9 +20,8 @@ public class Json2SqlitePOSsLine extends XmlWordIntoSqlite {
 		try {
 			Json2SqlitePOSsLine levelSqlite = new Json2SqlitePOSsLine();
 			levelSqlite.xmlFiles2Words();
-			String sqlCreate = "CREATE TABLE IF NOT EXISTS LevelWordTab (frequency,spelling,DJ,KK,level,partsOfSpeech,Meaning,sents);";
-			String sqlInsert = "INSERT INTO LevelWordTab VALUES(?,?,?,?,?,?,?,?)";
-			levelSqlite.doInsert2DB(sqlCreate, sqlInsert);
+			//levelSqlite.word2Vector("00007	that");
+			levelSqlite.doInsert2DB();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

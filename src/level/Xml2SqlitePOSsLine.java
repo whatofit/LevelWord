@@ -3,8 +3,10 @@ package level;
 import java.util.List;
 import java.util.Vector;
 
-import model.Sent;
-import model.Word;
+import com.genericsdao.bean.Word;
+
+import model.XmlSent;
+import model.XmlWord;
 
 public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite {
 	public Xml2SqlitePOSsLine() {
@@ -13,11 +15,11 @@ public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite {
 
 	// 每一个单词,插入词性个数条记录,词频/单词/音标等,都是重复的
 	public void word2Vector(String line) {
-		Word word = wordParser.getWord(line);
-		List<Sent> sents = word.getSents();
+		XmlWord word = wordParser.getWord(line);
+		List<XmlSent> sents = word.getSents();
 		String sentence = "";
 		for (int i = 0; i < sents.size(); i++) {
-			Sent sent = sents.get(i);
+			XmlSent sent = sents.get(i);
 			if (!sentence.isEmpty()) {
 				// sentence = sentence + "||";
 			}
@@ -27,20 +29,21 @@ public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite {
 		List<String> partsOfSpeech = word.getPartsOfSpeech();
 		List<String> meaning = word.getMeaning();
 		for (int i = 0; i < partsOfSpeech.size(); i++) {
-			Vector vecWord = new Vector();
-			vecWord.add(word.getWordFrequency());
-			vecWord.add(word.getKey());
-			vecWord.add(word.getPs());
-			vecWord.add(word.getPs2());
-			vecWord.add(null);
-			vecWord.add(partsOfSpeech.get(i));
-			vecWord.add(meaning.get(i));
+			Word dbWord = new Word();
+			dbWord.setId(vecWords.size()+"");
+			dbWord.setFrequency(word.getWordFrequency());
+			dbWord.setSpelling(word.getKey());
+			dbWord.setPhoneticDJ(word.getPs());
+			dbWord.setPhoneticKK(word.getPs2());
+			dbWord.setLevel(null);
+			dbWord.setPartsOfSpeech(partsOfSpeech.get(i));
+			dbWord.setMeanings(meaning.get(i));
 			if (i == 0) {
-				vecWord.add(sentence);
+				dbWord.setSents(sentence);
 			} else {
-				vecWord.add(null);
+				dbWord.setSents(null);
 			}
-			vecWords.add(vecWord);
+			vecWords.add(dbWord);
 		}
 	}
 
@@ -51,9 +54,7 @@ public class Xml2SqlitePOSsLine extends XmlWordIntoSqlite {
 		try {
 			Xml2SqlitePOSsLine levelSqlite = new Xml2SqlitePOSsLine();
 			levelSqlite.xmlFiles2Words();
-			String sqlCreate = "CREATE TABLE IF NOT EXISTS LevelWordTab (frequency,spelling,DJ,KK,level,partsOfSpeech,Meaning,sents);";
-			String sqlInsert = "INSERT INTO LevelWordTab VALUES(?,?,?,?,?,?,?,?)";
-			levelSqlite.doInsert2DB(sqlCreate, sqlInsert);
+			levelSqlite.doInsert2DB();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

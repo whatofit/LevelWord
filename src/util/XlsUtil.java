@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import model.Sent;
-import model.Word;
+import model.XmlSent;
+import model.XmlWord;
 
 import jxl.Workbook;
 import jxl.write.Label;
@@ -79,13 +79,13 @@ public class XlsUtil {
 	}
 
 	/** 创建Excel表 */
-	public static boolean addXLS(WritableSheet sheet, Word word, int row) {
+	public static boolean addXLS(WritableSheet sheet, XmlWord word, int row) {
 		try {
 			List<String> partsOfSpeech = word.getPartsOfSpeech();// 词性
 			// System.out.println("partsOfSpeech.size()=" +
 			// partsOfSpeech.size());
 			List<String> meanings = word.getMeaning(); // 意义
-			List<Sent> sents = word.getSents(); // 例句
+			List<XmlSent> sents = word.getSents(); // 例句
 			int height = partsOfSpeech.size() - 1;
 			if (height < 0) {
 				height = 0;
@@ -128,7 +128,7 @@ public class XlsUtil {
 			column += 2; // 例句
 			int i = 1;
 			StringBuffer sb = new StringBuffer();
-			for (Sent sent : sents) {
+			for (XmlSent sent : sents) {
 				sb.append(i + ". " + sent.getOrig().trim()); // 原词例句
 				sb.append("\r\n");
 				sb.append("   " + sent.getTrans().trim()); // 例句翻译
