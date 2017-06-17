@@ -20,8 +20,9 @@ import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
-import level.ormlitedao.Word;
-import level.ormlitedao.WordDaoImpl;
+import com.ormlitedao.bean.Word;
+import com.ormlitedao.daoimpl.WordDaoImpl;
+
 
 //import com.genericsdao.bean.Word;
 //import com.genericsdao.daoimp.WordDaoImpl;

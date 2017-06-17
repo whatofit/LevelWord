@@ -34,8 +34,6 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import level.ormlitedao.Word;
-import level.ormlitedao.WordDaoImpl;
 
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.Dao.CreateOrUpdateStatus;
@@ -43,6 +41,8 @@ import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import com.ormlitedao.bean.Word;
+import com.ormlitedao.daoimpl.WordDaoImpl;
 
 //import com.genericsdao.bean.Word;
 //import com.genericsdao.daoimp.WordDaoImpl;

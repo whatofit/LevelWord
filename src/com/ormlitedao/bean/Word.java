@@ -1,4 +1,4 @@
-package level.ormlitedao;
+package com.ormlitedao.bean;
 
 import org.apache.commons.lang3.StringUtils;
 

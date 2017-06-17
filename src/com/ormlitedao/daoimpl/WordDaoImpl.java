@@ -1,4 +1,4 @@
-package level.ormlitedao;
+package com.ormlitedao.daoimpl;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -9,6 +9,7 @@ import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
+import com.ormlitedao.bean.Word;
 
 //public class CellPhoneDao extends BaseDaoImpl<CellPhone, String>  {
 public class WordDaoImpl extends BaseDaoImpl<Word, String>
