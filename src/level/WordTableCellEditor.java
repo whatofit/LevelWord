@@ -7,6 +7,7 @@ import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.EventObject;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -19,8 +20,11 @@ import javax.swing.event.EventListenerList;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 
-import com.genericsdao.bean.Word;
-import com.genericsdao.daoimp.WordDaoImpl;
+import level.ormlitedao.Word;
+import level.ormlitedao.WordDaoImpl;
+
+//import com.genericsdao.bean.Word;
+//import com.genericsdao.daoimp.WordDaoImpl;
 
 public class WordTableCellEditor extends JPanel implements TableCellEditor {
 	private static final long serialVersionUID = 5860619160549087886L;
@@ -62,11 +66,56 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
 						JTable.class, (Component) e.getSource());
 				int row = table.getEditingRow();
 				int column = table.getEditingColumn();
+				System.out.println("edit_btn,row,column=" + row + "," + column);
+				DefaultTableModel tableModel = (DefaultTableModel) table
+						.getModel();
+				Word word = new Word();
+				switch (column) {
+				case 0:
+					int id = (int) tableModel.getValueAt(row,column);
+					word.setId(id);
+				    break;
+				case 1:
+					String frequency = (String) tableModel.getValueAt(row,column);
+					word.setFrequency(frequency);
+				    break;
+				case 2:
+					String spelling = (String) tableModel.getValueAt(row,column);
+					word.setSpelling(spelling);
+				    break;
+				case 3:
+					String phoneticDJ = (String) tableModel.getValueAt(row,column);
+					word.setPhoneticDJ(phoneticDJ);
+				    break;
+				case 4:
+					String phoneticKK = (String) tableModel.getValueAt(row,column);
+					word.setPhoneticKK(phoneticKK);
+				case 5:
+					String level = (String) tableModel.getValueAt(row,column);
+					word.setLevel(level);
+				case 6:
+					String partsOfSpeech = (String) tableModel.getValueAt(row,column);
+					word.setPartsOfSpeech(partsOfSpeech);
+				case 7:
+					String meanings = (String) tableModel.getValueAt(row,column);
+					word.setMeanings(meanings);
+				case 8:
+					String sents = (String) tableModel.getValueAt(row,column);
+					word.setSents(sents);
+				default:
+				    break;
+				}
+				System.out.println("del_btn,id=" + word);
+				
 				// table.getCellEditor().stopCellEditing();
 				// ((DefaultTableModel) table.getModel()).removeRow(row);
 				if (e.getSource() == edit_btn) {
-					System.out.println("edit_btn,row,column=" + row + ","
-							+ column);
+					
+					try {
+						LevelWord.wordDao.update(word);
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
 				}
 			}
 		});
@@ -85,12 +134,13 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
 							+ column);
 					DefaultTableModel tableModel = (DefaultTableModel) table
 							.getModel();
-					String id = (String) tableModel.getValueAt(row,0);
+					int id = (int) tableModel.getValueAt(row,0);
 					System.out.println("del_btn,id=" + id);
-					Word word = new Word();
-					word.setId(id);
-					WordDaoImpl imp = new WordDaoImpl();
-					imp.delete(word);
+					try {
+						LevelWord.wordDao.deleteById(String.valueOf(id));
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
 					tableModel.removeRow(row); // 删除行
 				}
 			}

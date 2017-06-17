@@ -8,5 +8,8 @@
 	<classpathentry kind="lib" path="libs/dom4j-2.0.0-ALPHA-2.jar"/>
 	<classpathentry kind="lib" path="libs/sqlite-jdbc-3.8.11.2.jar"/>
 	<classpathentry kind="lib" path="libs/commons-lang3-3.5.jar"/>
+	<classpathentry kind="lib" path="libs/ormlite-core-5.0.jar" sourcepath="libs/ormlite-core-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="libs/ormlite-jdbc-5.0.jar" sourcepath="libs/ormlite-jdbc-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="libs/h2-1.4.196.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

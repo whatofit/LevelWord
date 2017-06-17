@@ -1,22 +1,17 @@
 package level;
 
 import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
+import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Vector;
 
-import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
@@ -39,10 +34,18 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
-import com.genericsdao.bean.User;
-import com.genericsdao.bean.Word;
-import com.genericsdao.daoimp.UserDaoImpl;
-import com.genericsdao.daoimp.WordDaoImpl;
+import level.ormlitedao.Word;
+import level.ormlitedao.WordDaoImpl;
+
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.dao.Dao.CreateOrUpdateStatus;
+import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.jdbc.JdbcConnectionSource;
+import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
+
+//import com.genericsdao.bean.Word;
+//import com.genericsdao.daoimp.WordDaoImpl;
 
 /*
  JTable常见用法细则 
@@ -199,6 +202,17 @@ import com.genericsdao.daoimp.WordDaoImpl;
  * */
 
 public class LevelWord extends JFrame {
+    // we are using the in-memory H2 database
+//	private final static String DATABASE_URL = "jdbc:h2:mem:LevelDict";
+//	private final static String DATABASE_URL = "jdbc:h2:file:LevelDict";//C:/data/sample (Windows only)
+	private final static String DATABASE_URL = "jdbc:h2:./LevelDict.h2";
+	//jdbc:h2:tcp://dbserv:8084/~/sample
+	
+	// sqlite
+	// private final static String DATABASE_URL = "jdbc:sqlite:LevelDict.db3";
+	private static ConnectionSource connectionSource;
+	public static WordDaoImpl wordDao;
+	
 	private DefaultTableModel tableModel; // 表格模型对象
 	private JTable table;
 	private JTextField aTextField;
@@ -216,6 +230,17 @@ public class LevelWord extends JFrame {
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
+				} finally {
+					// destroy the data source which should close underlying connections
+//					if (connectionSource != null) {
+//						try {
+//							//connectionSource.close();
+//							//connectionSource = null;
+//						} catch (IOException e) {
+//							// TODO Auto-generated catch block
+//							e.printStackTrace();
+//						}
+//					}
 				}
 			}
 		});
@@ -224,7 +249,7 @@ public class LevelWord extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public LevelWord() {
+	public LevelWord() throws SQLException {
 		setIconImage(Toolkit.getDefaultToolkit().getImage(
 				"E:\\workspace\\LevelWord_PC\\resoure\\word1.jpg"));
 		setTitle("LevelWord");
@@ -237,9 +262,11 @@ public class LevelWord extends JFrame {
 		// { "A4", "B4", "C4" }, { "A5", "B5", "C5" } }; // 数据
 		// String sqlDrop = "drop table if exists levelWordTable;";
 		// DBUtil.ExecuteUpdate(sqlDrop);
-		final WordDaoImpl wordDao = new WordDaoImpl();
-		int affectRowCount = wordDao.create();
-
+		
+		//final WordDaoImpl wordDao = new WordDaoImpl();
+		//int affectRowCount = wordDao.create();
+		// create our data-source for the database
+		
 		// String sqlCreate =
 		// "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
 		// int count = dbMgr.executeUpdate(sqlCreate);
@@ -271,20 +298,14 @@ public class LevelWord extends JFrame {
 		// }
 		// titleVector.addElement("operate");
 
-		Vector titleVector = wordDao.getTableTitle(); // headVector/column
-													// Names/表头集合
-													// Word word = new Word();
-		// word.setFrequency("0007");
-		// imp.insert(word);
-		// word = new Word();
-		// word.setFrequency("0009");
-		// imp.insert(word);
-		// word = new Word();
-		// word.setFrequency("00201");
-		// imp.insert(word);
-		Vector cellsVector = wordDao.selectAll2Vector(); // rowsVector/rows
-														// data/数据体集合
-		tableModel = new DefaultTableModel(cellsVector, titleVector) {
+		try {
+			connectionSource = new JdbcConnectionSource(DATABASE_URL);
+			wordDao = new WordDaoImpl(connectionSource);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+
+		tableModel = new DefaultTableModel(0,10) {
 			public boolean isCellEditable(int row, int column) {
 				// JTextField tf = new JTextField();
 				// tf.addKeyListener(new KeyAdapter() {
@@ -301,55 +322,55 @@ public class LevelWord extends JFrame {
 				return true;// 默认是true
 			}
 
-			private void event(KeyEvent e) {
-				int row = table.getSelectedRow();
-				int column = table.getSelectedColumn();
-
-				DefaultCellEditor obj = (DefaultCellEditor) (table
-						.getColumnModel().getColumn(column).getCellEditor());
-				if (obj != null) {
-					JComponent com = (JComponent) obj.getComponent();
-					Object value = null;
-					if (com instanceof JTextField) {
-						value = ((JTextField) com).getText();
-					} else if (com instanceof JToggleButton) {
-						value = ((JToggleButton) com).isSelected();
-					}
-					System.out.println("row:" + row + " ,column:" + column
-							+ " ,value:" + value);
-					System.out.println("e.getKeyCode:" + e.getKeyCode());
-					System.out
-							.println("KeyEvent.VK_ENTER:" + KeyEvent.VK_ENTER);
-					switch (e.getKeyCode()) {
-					case KeyEvent.VK_ENTER:
-						String id = (String) tableModel.getValueAt(row, 0);
-						// String rowColumn = (String)
-						// tableModel.getValueAt(row, column);
-						String freq = (String) tableModel.getValueAt(row, 1);
-						Word word = new Word();
-						word.setId(id);
-						word.setFrequency(freq);
-						wordDao.update(word);
-						break;
-					case KeyEvent.VK_SPACE:
-						break;
-					case KeyEvent.VK_BACK_SPACE:
-						break;
-					case KeyEvent.VK_ESCAPE:
-						break;
-					case KeyEvent.VK_UP:
-						break;
-					case KeyEvent.VK_DOWN:
-						break;
-					case KeyEvent.VK_LEFT:
-						break;
-					case KeyEvent.VK_RIGHT:
-						break;
-					default:
-						break;
-					}
-				}
-			}
+//			private void event(KeyEvent e) {
+//				int row = table.getSelectedRow();
+//				int column = table.getSelectedColumn();
+//
+//				DefaultCellEditor obj = (DefaultCellEditor) (table
+//						.getColumnModel().getColumn(column).getCellEditor());
+//				if (obj != null) {
+//					JComponent com = (JComponent) obj.getComponent();
+//					Object value = null;
+//					if (com instanceof JTextField) {
+//						value = ((JTextField) com).getText();
+//					} else if (com instanceof JToggleButton) {
+//						value = ((JToggleButton) com).isSelected();
+//					}
+//					System.out.println("row:" + row + " ,column:" + column
+//							+ " ,value:" + value);
+//					System.out.println("e.getKeyCode:" + e.getKeyCode());
+//					System.out
+//							.println("KeyEvent.VK_ENTER:" + KeyEvent.VK_ENTER);
+//					switch (e.getKeyCode()) {
+//					case KeyEvent.VK_ENTER:
+//						String id = (String) tableModel.getValueAt(row, 0);
+//						// String rowColumn = (String)
+//						// tableModel.getValueAt(row, column);
+//						String freq = (String) tableModel.getValueAt(row, 1);
+//						Word word = new Word();
+//						word.setId(id);
+//						word.setFrequency(freq);
+//						wordDao.update(word);
+//						break;
+//					case KeyEvent.VK_SPACE:
+//						break;
+//					case KeyEvent.VK_BACK_SPACE:
+//						break;
+//					case KeyEvent.VK_ESCAPE:
+//						break;
+//					case KeyEvent.VK_UP:
+//						break;
+//					case KeyEvent.VK_DOWN:
+//						break;
+//					case KeyEvent.VK_LEFT:
+//						break;
+//					case KeyEvent.VK_RIGHT:
+//						break;
+//					default:
+//						break;
+//					}
+//				}
+//			}
 		};
 		table = new JTable(tableModel);
 		// table.setBackground(Color.white);
@@ -365,12 +386,14 @@ public class LevelWord extends JFrame {
 				int row = e.getFirstRow();
 				int column = e.getColumn();
 				System.out.println("tableChanged row:" + row + ",column:"+ column);
-				TableModel model = (TableModel) e.getSource();
-				String columnName = model.getColumnName(column);
-				System.out.println("tableChanged columnName:" + columnName);
-				Object data = model.getValueAt(row, column);
-				System.out.println("tableChanged,value:" + data);
-				if (e.getType() == TableModelEvent.UPDATE) {
+				if (column >= 0) {
+					TableModel model = (TableModel) e.getSource();
+					String columnName = model.getColumnName(column);
+					System.out.println("tableChanged columnName:" + columnName);
+					Object data = model.getValueAt(row, column);
+					System.out.println("tableChanged,value:" + data);
+					if (e.getType() == TableModelEvent.UPDATE) {
+					}
 				}
 			}
 		});
@@ -502,11 +525,18 @@ public class LevelWord extends JFrame {
 */
 						//查数据库中是否有相同拼写及词性的记录
 						//若不存在,则插入;若存在,则更新(全部字段还是指定字段)/或先删除,后插入,Id会变,
-//						Word word = new Word();
-//						word.setId("");
-//						word.setFrequency("");
-//						word.setSpelling("Spelling");
-//						word.setLevel("9");
+						Word word = new Word("159","Spelling");
+						word.setLevel("9");
+						try {
+							CreateOrUpdateStatus cuStatus = wordDao.createOrUpdate(word);
+							System.out.println("CreateOrUpdateStatus.isCreated()=" + cuStatus.isCreated());
+							System.out.println("CreateOrUpdateStatus.isUpdated()=" + cuStatus.isUpdated());
+							System.out.println("CreateOrUpdateStatus.getNumLinesChanged()=" + cuStatus.getNumLinesChanged());
+							//connectionSource.close();
+						} catch (SQLException e1) {
+							// TODO Auto-generated catch block
+							e1.printStackTrace();
+						}
 //						wordDao.select(word);
 //						wordDao.insert(word);
 //						wordDao.update(word);
@@ -526,29 +556,59 @@ public class LevelWord extends JFrame {
 		final JButton updateButton = new JButton("修改"); // 修改按钮
 		updateButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
-						int selectedRow = table.getSelectedRow();// 获得选中行的索引
-						if (selectedRow != -1) // 是否存在选中行
+						int row = table.getSelectedRow();// 获得选中行的索引
+						if (row != -1) // 是否存在选中行
 						{
 							// 修改指定的值：
 							tableModel.setValueAt(aTextField.getText(),
-									selectedRow, 0);
+									row, 1);
 							tableModel.setValueAt(bTextField.getText(),
-									selectedRow, 1);
+									row, 2);
 							tableModel.setValueAt(cTextField.getText(),
-									selectedRow, 2);
-							// table.setValueAt(arg0, arg1, arg2)
-							String id = (String) tableModel.getValueAt(
-									selectedRow, 0);
-							String freq2 = (String) tableModel.getValueAt(
-									selectedRow, 1);
-							String sents = (String) tableModel.getValueAt(
-									selectedRow, 8);
-							Word word = new Word();
-							word.setId(id);
-							word.setFrequency(freq2);
-							word.setSents(sents);
-							// 其他字段没有设置，会被更新修改清空删除掉
-							wordDao.update(word);
+									row, 5);
+							Word word = new Word();// 其他字段没有设置，会被更新修改清空删除掉
+							for (int column=0;column<=8;column++)
+							switch (column) {
+							case 0:
+								int id = (int) tableModel.getValueAt(row,column);
+								word.setId(id);
+							    break;
+							case 1:
+								String frequency = (String) tableModel.getValueAt(row,column);
+								word.setFrequency(frequency);
+							    break;
+							case 2:
+								String spelling = (String) tableModel.getValueAt(row,column);
+								word.setSpelling(spelling);
+							    break;
+							case 3:
+								String phoneticDJ = (String) tableModel.getValueAt(row,column);
+								word.setPhoneticDJ(phoneticDJ);
+							    break;
+							case 4:
+								String phoneticKK = (String) tableModel.getValueAt(row,column);
+								word.setPhoneticKK(phoneticKK);
+							case 5:
+								String level = (String) tableModel.getValueAt(row,column);
+								word.setLevel(level);
+							case 6:
+								String partsOfSpeech = (String) tableModel.getValueAt(row,column);
+								word.setPartsOfSpeech(partsOfSpeech);
+							case 7:
+								String meanings = (String) tableModel.getValueAt(row,column);
+								word.setMeanings(meanings);
+							case 8:
+								String sents = (String) tableModel.getValueAt(row,column);
+								word.setSents(sents);
+							default:
+							    break;
+							}
+							System.out.println("del_btn,id=" + word);
+							try {
+								LevelWord.wordDao.update(word);
+							} catch (SQLException e1) {
+								e1.printStackTrace();
+							}
 						}
 					}
 				});
@@ -560,12 +620,13 @@ public class LevelWord extends JFrame {
 						int selectedRow = table.getSelectedRow();// 获得选中行的索引
 						if (selectedRow != -1) // 存在选中行
 						{
-							String id = (String) tableModel.getValueAt(
-									selectedRow, 0);
+							int id = (int) tableModel.getValueAt(selectedRow, 0);
 							tableModel.removeRow(selectedRow); // 删除行
-							Word word = new Word();
-							word.setId(id);
-							wordDao.delete(word);
+							try {
+								wordDao.deleteById(String.valueOf(id));
+							} catch (SQLException e1) {
+								e1.printStackTrace();
+							}
 						}
 					}
 				});
@@ -578,14 +639,19 @@ public class LevelWord extends JFrame {
 		insertButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
 						int selectedRow = table.getSelectedRow();// 获得选中行的索引
+						if (selectedRow == -1 ) {//没有选中的行
+							selectedRow = 0;
+						}
 						if (selectedRow != -1) // 存在选中行
 						{
-							Word word = new Word();
-							word.setId("" + (selectedRow * 2 + 1));
-							word.setFrequency("" + (selectedRow + 1));
-							word.setSpelling("Spelling");
-							word.setLevel("9");
-							wordDao.insert(word);
+							Word word = new Word("Spelling"+(2*selectedRow+1));
+							word.setFrequency("" + (selectedRow*2 + 1));
+							word.setLevel("15");
+							try {
+								wordDao.create(word);
+							} catch (SQLException e1) {
+								e1.printStackTrace();
+							}
 							tableModel.addRow(new Object[] { "sitinspring",
 									"35", "Boss" });
 						}
@@ -596,6 +662,8 @@ public class LevelWord extends JFrame {
 		final JButton refreshButton = new JButton("刷新");
 		refreshButton.addActionListener(new ActionListener() {// 添加事件
 					public void actionPerformed(ActionEvent e) {
+//						tableModel.setDataVector(wordDao.selectAll2Vector(),
+//								wordDao.getTableTitle());
 						tableModel.setDataVector(wordDao.selectAll2Vector(),
 								wordDao.getTableTitle());
 						tableModel.fireTableDataChanged();
@@ -628,7 +696,7 @@ public class LevelWord extends JFrame {
 
 		String[] items = new String[] { "Snowboarding", "Rowing", "Knitting",
 				"Speed reading", "None of the above" };
-		JComboBox comboBox = new JComboBox(items);
+		JComboBox<String> comboBox = new JComboBox<String>(items);
 		// Dimension d = comboBox.getPreferredSize();
 		// comboBox.setPopupWidth(d.width);
 
@@ -637,9 +705,9 @@ public class LevelWord extends JFrame {
 		// DefaultCellEditor类可以将表格中的单元格设置成下拉框
 		// tableColumn.setCellEditor(new DefaultCellEditor(comboBox));
 		TableColumnModel tcm = table.getColumnModel();
-		tcm.getColumn(5).setCellEditor(new DefaultCellEditor(comboBox));
-		// TableColumn tc = tcm.getColumn(0);
-		TableColumn tc = table.getColumn("operate");
+		tcm.getColumn(6).setCellEditor(new DefaultCellEditor(comboBox));
+		//TableColumn tc = table.getColumn("operate");
+		TableColumn tc = tcm.getColumn(9);//第10列/最后一列
 		tc.setPreferredWidth(120);
 		tc.setCellRenderer(new WordTableCellRenderer());
 		tc.setCellEditor(new WordTableCellEditor());
