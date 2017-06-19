@@ -75,9 +75,21 @@ public class MultiSpanCellTableExample extends JFrame {
 
     MultiSpanCellTableExample() {
         super("Multi-Span Cell Example");
+        Object[][] data =  new Object[][]{
+                {"SNo."    ,""  ,"" ,"" ,"" ,""},
+                {"Name"    ,"1" ,"" ,"" ,"" ,""},
+                {""        ,"2" ,"" ,"" ,"" ,""},
+                {"Language","1" ,"" ,"" ,"" ,""},
+                {""        ,"2" ,"" ,"" ,"" ,""},
+                {""        ,"3" ,"" ,"" ,"" ,""},
+                {""        ,"3" ,"" ,"" ,"" ,""},
+                {""        ,"3" ,"" ,"" ,"" ,""},
+                {""        ,"3" ,"" ,"" ,"" ,""},
+                {""        ,"3" ,"" ,"" ,"" ,""}};
+        Object[] column = new Object[] { "A col" ,"B col" ,"C col" ,"D col" ,"E col" ,"F col"};
 
         final AttributiveCellTableModel tableModel = new AttributiveCellTableModel(
-                10, 6);// 10行,6列
+                data, column);// 10行,6列
         /*
          * AttributiveCellTableModel ml = new AttributiveCellTableModel(10,6) {
          * public Object getValueAt(int row, int col) { return "" + row + ","+
