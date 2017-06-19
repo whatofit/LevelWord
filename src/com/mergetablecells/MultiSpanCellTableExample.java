@@ -82,10 +82,11 @@ public class MultiSpanCellTableExample extends JFrame {
                 {"Language","1" ,"" ,"" ,"" ,""},
                 {""        ,"2" ,"" ,"" ,"" ,""},
                 {""        ,"3" ,"" ,"" ,"" ,""},
-                {""        ,"3" ,"" ,"" ,"" ,""},
-                {""        ,"3" ,"" ,"" ,"" ,""},
-                {""        ,"3" ,"" ,"" ,"" ,""},
-                {""        ,"3" ,"" ,"" ,"" ,""}};
+                {""        ,"4" ,"" ,"" ,"" ,""},
+                {""        ,"5" ,"" ,"" ,"" ,""},
+                {""        ,"6" ,"" ,"" ,"" ,""},
+                {""        ,"7" ,"" ,"" ,"" ,""},
+                {""        ,"8" ,"" ,"" ,"" ,""}};
         Object[] column = new Object[] { "A col" ,"B col" ,"C col" ,"D col" ,"E col" ,"F col"};
 
         final AttributiveCellTableModel tableModel = new AttributiveCellTableModel(
