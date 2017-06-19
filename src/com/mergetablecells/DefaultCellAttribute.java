@@ -45,19 +45,19 @@ class DefaultCellAttribute implements ICellAttribute, ICellSpan {
         }
     }
 
-    // 设置单元格的值，起始x/y 宽/width高/height
-    public Vector<Object> getAllCellValue() {
-        Vector<Object> cellsVector = new Vector<Object>();
-        for (int i = 0; i < span.length; i++) {
-            Vector<Object> v = new Vector<Object>();
-            for (int j = 0; j < span[i].length; j++) {
-                v.add(span[i][j][ICellSpan.ROW] + " X "
-                        + span[i][j][ICellSpan.COLUMN]);
-            }
-            cellsVector.add(v);
-        }
-        return cellsVector;
-    }
+//    // 设置单元格的值，起始x/y 宽/width高/height
+//    public Vector<Object> getAllCellValue() {
+//        Vector<Object> cellsVector = new Vector<Object>();
+//        for (int i = 0; i < span.length; i++) {
+//            Vector<Object> v = new Vector<Object>();
+//            for (int j = 0; j < span[i].length; j++) {
+//                v.add(span[i][j][ICellSpan.ROW] + " X "
+//                        + span[i][j][ICellSpan.COLUMN]);
+//            }
+//            cellsVector.add(v);
+//        }
+//        return cellsVector;
+//    }
 
     //
     // CellSpan

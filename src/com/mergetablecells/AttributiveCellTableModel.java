@@ -30,7 +30,7 @@ class AttributiveCellTableModel extends DefaultTableModel {
         // dataVector = new Vector();
         setNumRows(numRows);
         cellAtt = new DefaultCellAttribute(numRows, numColumns);
-        changeAllCellAttribute();
+        //changeAllCellAttribute();
     }
 
     // public AttributiveCellTableModel(Vector columnNames, int numRows) {
@@ -51,7 +51,7 @@ class AttributiveCellTableModel extends DefaultTableModel {
     public AttributiveCellTableModel(Object[][] data, Object[] columnNames) {
         setDataVector(data, columnNames);
         cellAtt = new DefaultCellAttribute(data.length, columnNames.length);
-        changeAllCellAttribute();
+        //changeAllCellAttribute();
     }
 
     //
@@ -149,7 +149,7 @@ class AttributiveCellTableModel extends DefaultTableModel {
      * command) { cellAtt.changeAttribute(rows, columns, command); }
      */
 
-    public void changeAllCellAttribute() {
-        dataVector = cellAtt.getAllCellValue();
-    }
+//    public void changeAllCellAttribute() {
+//        dataVector = cellAtt.getAllCellValue();
+//    }
 }

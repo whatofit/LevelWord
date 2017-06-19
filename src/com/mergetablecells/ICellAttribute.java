@@ -22,5 +22,5 @@ interface ICellAttribute {
 
     public void setSize(Dimension size);
 
-    public Vector<Object> getAllCellValue();
+    //public Vector<Object> getAllCellValue();
 }

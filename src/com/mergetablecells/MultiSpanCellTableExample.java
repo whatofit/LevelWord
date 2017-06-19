@@ -87,7 +87,10 @@ public class MultiSpanCellTableExample extends JFrame {
         JScrollPane scroll = new JScrollPane(table);
 
         final ICellSpan cellAtt = (ICellSpan) tableModel.getCellAttribute();
-
+        cellAtt.combine(new int[] { 0 }, new int[] { 0, 1 });
+        cellAtt.combine(new int[] { 1, 2 }, new int[] { 0 });
+        cellAtt.combine(new int[] { 3, 4, 5 }, new int[] { 0 });
+        
         JButton b_one = new JButton("Combine");
         b_one.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -97,7 +100,7 @@ public class MultiSpanCellTableExample extends JFrame {
                         + Arrays.toString(columns));
                 System.out.println("getSelectedRows=" + Arrays.toString(rows));
                 cellAtt.combine(rows, columns);
-                tableModel.changeAllCellAttribute();
+                //tableModel.changeAllCellAttribute();
                 table.clearSelection();
                 table.revalidate();
                 table.repaint();
