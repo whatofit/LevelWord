@@ -7,28 +7,31 @@ import java.lang.annotation.Target;
 
 /**
  * 标识数据库字段的名称
+ * 
  * @author dave
- *
+ * 
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface Column {
-	
-	/**
-	 * 字段名称
-	 */
-	String value();
-	
-	/**
-	 * 字段的类型
-	 * @return
-	 */
-	Class<?> type() default String.class;
-	
-	/**
-	 * 字段的长度
-	 * @return
-	 */
-	int length() default 0;
+
+    /**
+     * 字段名称
+     */
+    String value();
+
+    /**
+     * 字段的类型
+     * 
+     * @return
+     */
+    Class<?> type() default String.class;
+
+    /**
+     * 字段的长度
+     * 
+     * @return
+     */
+    int length() default 0;
 
 }

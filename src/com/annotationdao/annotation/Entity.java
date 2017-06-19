@@ -12,9 +12,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface Entity {
 
-	/**
-	 * 表名
-	 */
-	String value();
-	
+    /**
+     * 表名
+     */
+    String value();
+
 }

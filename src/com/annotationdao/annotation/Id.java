@@ -12,10 +12,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface Id {
 
-	/**
-	 * ID的名称
-	 * @return
-	 */
-	String value();
-	
+    /**
+     * ID的名称
+     * 
+     * @return
+     */
+    String value();
+
 }

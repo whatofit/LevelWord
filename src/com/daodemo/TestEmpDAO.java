@@ -34,22 +34,24 @@ import com.daodemo.vo.Emp;
 //对于DAO，包的命名和类的命名一定要有层次。
 
 public class TestEmpDAO {
-	public static void main(String args[]) throws Exception {
-		Emp emp = null;
-		for (int i = 0; i < 5; i++) {
-			emp = new Emp();
-			emp.setEmpno(i);
-			emp.setEname("xiazdong-" + i);
-			emp.setJob("stu-" + i);
-			java.util.Date date=new java.util.Date();
-			emp.setHireDate(new java.sql.Date(date.getTime()));
-			
-//			pst.setDate(1, java.sql.Date(date.getTime()));//这里的Date是sql中的::得到的是日期
-//			pst.setTime(2, java.sql.Time(date.getTime()))//sql包中的Time::得到的是时间
-//			pst.setObject(3, java.sql.Timestamp(date.getTime()));//::得到的是日期及时间
-			
-			emp.setSal(500 * i);
-			DAOFactory.getInstance().insert(emp);
-		}
-	}
+    public static void main(String args[]) throws Exception {
+        Emp emp = null;
+        for (int i = 0; i < 5; i++) {
+            emp = new Emp();
+            emp.setEmpno(i);
+            emp.setEname("xiazdong-" + i);
+            emp.setJob("stu-" + i);
+            java.util.Date date = new java.util.Date();
+            emp.setHireDate(new java.sql.Date(date.getTime()));
+
+            // pst.setDate(1,
+            // java.sql.Date(date.getTime()));//这里的Date是sql中的::得到的是日期
+            // pst.setTime(2, java.sql.Time(date.getTime()))//sql包中的Time::得到的是时间
+            // pst.setObject(3,
+            // java.sql.Timestamp(date.getTime()));//::得到的是日期及时间
+
+            emp.setSal(500 * i);
+            DAOFactory.getInstance().insert(emp);
+        }
+    }
 }
