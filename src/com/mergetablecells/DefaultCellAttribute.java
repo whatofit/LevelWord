@@ -7,7 +7,7 @@ import java.util.Vector;
  * @version 1.0 11/22/98
  */
 // 默认单元格属性，继承与CellAttribute与CellSpan
-class DefaultCellAttribute implements ICellAttribute, ICellSpan {
+public class DefaultCellAttribute implements ICellAttribute, ICellSpan {
     // implements ICellAttribute, ICellSpan, IColoredCell, ICellFont {
 
     //

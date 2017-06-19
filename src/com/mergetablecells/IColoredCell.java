@@ -4,7 +4,7 @@ package com.mergetablecells;
 //
 //import java.awt.Color;
 //
-//interface IColoredCell {
+//public interface IColoredCell {
 //
 //    public Color getForeground(int row, int column);
 //

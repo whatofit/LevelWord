@@ -1,6 +1,6 @@
 package com.mergetablecells;
 
-interface ICellSpan {
+public interface ICellSpan {
     public final int ROW = 0;
 
     public final int COLUMN = 1;

@@ -12,7 +12,7 @@ package com.mergetablecells;
 // * @version 1.0 11/22/98
 // */
 //
-//interface ICellFont {
+//public interface ICellFont {
 //
 //    public Font getFont(int row, int column);
 //

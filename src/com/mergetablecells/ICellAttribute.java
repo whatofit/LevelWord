@@ -10,7 +10,7 @@ import java.util.Vector;
  * @version 1.0 11/22/98
  */
 
-interface ICellAttribute {
+public interface ICellAttribute {
 
     // public void addColumn();
 

@@ -14,7 +14,7 @@ import javax.swing.table.TableCellRenderer;
  * @version 1.0 11/26/98
  */
 
-class MultiSpanCellTableUI extends BasicTableUI {
+public class MultiSpanCellTableUI extends BasicTableUI {
 
     public void paint(Graphics g, JComponent c) {
         Rectangle oldClipBounds = g.getClipBounds();

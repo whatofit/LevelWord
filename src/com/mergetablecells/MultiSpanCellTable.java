@@ -19,7 +19,7 @@ import javax.swing.table.TableModel;
  * @version 1.0 11/26/98
  */
 
-class MultiSpanCellTable extends JTable {
+public class MultiSpanCellTable extends JTable {
     private static final long serialVersionUID = 8279957701540683008L;
 
     public MultiSpanCellTable(TableModel model) {

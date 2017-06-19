@@ -8,7 +8,7 @@ import javax.swing.table.DefaultTableModel;
  * @version 1.0 11/22/98
  */
 // 带属性单元格的TableModel
-class AttributiveCellTableModel extends DefaultTableModel {
+public class AttributiveCellTableModel extends DefaultTableModel {
 
     /**
      * 
