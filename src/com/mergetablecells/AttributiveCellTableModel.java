@@ -126,6 +126,12 @@ public class AttributiveCellTableModel extends DefaultTableModel {
     // TableModelEvent.ALL_COLUMNS, TableModelEvent.INSERT));
     // }
 
+    public AttributiveCellTableModel(Vector<Vector<Object>> selectAll2Vector,
+            Vector<String> tableTitle) {
+        setDataVector(selectAll2Vector, tableTitle);
+        cellAtt = new DefaultCellAttribute(selectAll2Vector.size(), tableTitle.size());
+    }
+
     public ICellAttribute getCellAttribute() {
         return cellAtt;
     }

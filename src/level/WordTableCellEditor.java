@@ -117,11 +117,11 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
                 // ((DefaultTableModel) table.getModel()).removeRow(row);
                 if (e.getSource() == edit_btn) {
 
-                    try {
-                        LevelWord.wordDao.update(word);
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
+//                    try {
+//                        LevelWord.wordDao.update(word);
+//                    } catch (SQLException e1) {
+//                        e1.printStackTrace();
+//                    }
                 }
             }
         });
@@ -142,11 +142,11 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
                             .getModel();
                     int id = (int) tableModel.getValueAt(row, 0);
                     System.out.println("del_btn,id=" + id);
-                    try {
-                        LevelWord.wordDao.deleteById(String.valueOf(id));
-                    } catch (SQLException e1) {
-                        e1.printStackTrace();
-                    }
+//                    try {
+//                        LevelWord.wordDao.deleteById(String.valueOf(id));
+//                    } catch (SQLException e1) {
+//                        e1.printStackTrace();
+//                    }
                     tableModel.removeRow(row); // 删除行
                 }
             }

@@ -1,302 +1,105 @@
 package level;
 
+//http://www.apihome.cn/api/java/JTable.html
+
+//重写TableUI，来达到实现表格的合并和分解。
+
+//真正实现表格多行多列合并的是在MultiSpanCellTableUI这个类里实现，这个类完全重新绘制表格从而达到合并的目的。
+//代码很精练，不到100行，就搞定了表格的绘制。
+//
+//MultiSpanCellTable 继承于JTable，主要是重载了和表格定位相关的方法，
+//比如rowColumnAtPoint，getCellRect，rowAtPoint这几个方法，
+//根据Model里的数据来重新计算，道理也很简单,这样才能正确的判断用户选择的单元格，
+//因为被合并的单元格是无法选择的和无法显示的，所以必须要在这里进行。代码还是百来行。
+//
+//AttributiveCellTableModel继续于DefaultTableModel，
+//最关键的东西在这里，CellAttribute，他的实现是交给DefaultCellAttribute这个对象的，这个是存储单元格合并信息的地方，
+//而且也是MultiSpanCellTable在计算的重要数据，和MultiSpanCellTableUI绘制的核心数据之一。
+//DefaultCellAttribute有三个接口分别对应表格的功能。
+//
+//CellAttribute保存的是真正的视野上的表格信息，包括表格有多少行多少列（这是视觉上的不是逻辑上），
+//JTable逻辑数据任然是在传统的model，逻辑数据每一次改变都将会映射到这里，会刷新视觉数据。
+//
+//CellSpan 保存的是单元格的合并属性，可视行，行跨度，列跨度。这些是UI绘制必需的东西。
+//还有就是合并和拆分的功能也在这里，非常值得注意的是，在拆分合并表格的时候，他没有处理任何TableModel和Table的东西，就是在这里处理数据，
+//处理完毕JTable重刷，这种M和V隔离的是相当的清晰。
+
+//单元格的合并和拆分.
+//http://www.blogjava.net/zeyuphoenix/archive/2010/04/12/318097.html
+//JTable的单元格可编辑时可以把它看做一个JTextField,不可操作时可以看做一个JLabel,对于单元格的合并和拆分操作来说就是把JLabel或JTextField进行合并和拆分的过程.
+//JTable单元格的合并简单来说就是把你选定的要合并的单元格的边线擦掉,然后调整宽度和高度,再在这几个合并的单元格外围画一个新的边线,然后设置JTable的UI,刷新就可以了.
+
+//Example from http://www.crionics.com/products/opensource/faq/swing_ex/SwingExamples.html
+/* (swing1.1) (swing#1356,#1454) */
+
 import java.awt.BorderLayout;
-import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.sql.SQLException;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Vector;
 
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.event.MouseInputListener;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
-import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
-import javax.swing.table.TableModel;
 
-import com.j256.ormlite.dao.Dao.CreateOrUpdateStatus;
+import org.apache.commons.lang3.StringUtils;
+
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
-import com.ormlitedao.bean.Word;
+import com.mergetablecells.AttributiveCellTableModel;
+import com.mergetablecells.ICellSpan;
+import com.mergetablecells.MultiSpanCellTable;
 import com.ormlitedao.daoimpl.WordDaoImpl;
 
-//import com.genericsdao.bean.Word;
-//import com.genericsdao.daoimp.WordDaoImpl;
+/*   ----------------------------------------------
+ *  |         SNo.        |
+ *   ----------------------------------------------
+ *  |          |     1    |
+ *  |   Name   |-----------------------------------
+ *  |          |     2    |
+ *   ----------------------------------------------
+ *  |          |     1    |
+ *  |          |-----------------------------------
+ *  | Language |     2    |
+ *  |          |-----------------------------------
+ *  |          |     3    |
+ *   ----------------------------------------------
+ */
 
-/*
- JTable常见用法细则 
- JTable是Swing编程中很常用的控件,这里总结了一些常用方法以备查阅.
-
- 一.创建表格控件的各种方式:
- 1)  调用无参构造函数.
- JTable table = new JTable();
- 2)  以表头和表数据创建表格.
- Object[][] cellData = {{"row1-col1", "row1-col2"},{"row2-col1", "row2-col2"}};
- String[] columnNames = {"col1", "col2"};
- JTable table = new JTable(cellData, columnNames);
- 3)  以表头和表数据创建表格,并且让表单元格不可改.
- String[] headers = { "表头一", "表头二", "表头三" };
- Object[][] cellData = null;
- DefaultTableModel model = new DefaultTableModel(cellData, headers) {
- public boolean isCellEditable(int row, int column) {
- return false;
- }
- };
- table = new JTable(model);
-
- 二.对表格列的控制
- 1) 设置列不可随容器组件大小变化自动调整宽度.
- table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
- 2) 限制某列的宽度.
- TableColumn firsetColumn = table.getColumnModel().getColumn(0);
- firsetColumn.setPreferredWidth(30);
- firsetColumn.setMaxWidth(30);
- firsetColumn.setMinWidth(30);
- 3) 设置当前列数.
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- int count=5;
- tableModel.setColumnCount(count);
- 4) 取得表格列数
- int cols = table.getColumnCount();
- 5) 添加列
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- tableModel.addColumn("新列名");
- 6) 删除列
- table.removeColumn(table.getColumnModel().getColumn(columnIndex));// columnIndex是要删除的列序号
-
- 三.对表格行的控制
- 1) 设置行高
- table.setRowHeight(20);
- 2) 设置当前行数
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- int n=5;
- tableModel.setRowCount(n);
- 3) 取得表格行数
- int rows = table.getRowCount();
- 4) 添加表格行
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- tableModel.addRow(new Object[]{"sitinspring", "35", "Boss"});
- 5) 删除表格行
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- model.removeRow(rowIndex);// rowIndex是要删除的行序号
-
- 四.存取表格单元格的数据
- 1) 取单元格数据
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- String cellValue=(String) tableModel.getValueAt(row, column);// 取单元格数据,row是行号,column是列号
- 2) 填充数据到表格.
- 注:数据是Member类型的链表,Member类如下:
- public class Member{
- // 名称
- private String name;
-
- // 年龄
- private String age;
-
- // 职务
- private String title;
- }
- 填充数据的代码:
- public void fillTable(List members){
- DefaultTableModel tableModel = (DefaultTableModel) table
- .getModel();
- tableModel.setRowCount(0);// 清除原有行
-
- // 填充数据
- for(Member member:members){
- String[] arr=new String[3];
- arr[0]=member.getName();
- arr[1]=member.getAge();
- arr[2]=member.getTitle();
-
- // 添加数据到表格
- tableModel.addRow(arr);
- }
-
- // 更新表格
- table.invalidate();
- }
- 2) 取得表格中的数据
- public List getShowMembers(){
- List members=new ArrayList();
-
- DefaultTableModel tableModel = (DefaultTableModel) table
- .getModel();
-
- int rowCount=tableModel.getRowCount();
-
- for(int i=0;i     Member member=new Member();
-
- member.setName((String)tableModel.getValueAt(i, 0));// 取得第i行第一列的数据
- member.setAge((String)tableModel.getValueAt(i, 1));// 取得第i行第二列的数据
- member.setTitle((String)tableModel.getValueAt(i, 2));// 取得第i行第三列的数据
-
- members.add(member);
- }
-
- return members;
- }
-
- 五.取得用户所选的行
- 1) 取得用户所选的单行
- int selectRows=table.getSelectedRows().length;// 取得用户所选行的行数
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- if(selectRows==1){
- int selectedRowIndex = table.getSelectedRow(); // 取得用户所选单行  
-
- .// 进行相关处理
- }
- 2) 取得用户所选的多行
- int selectRows=table.getSelectedRows().length;// 取得用户所选行的行数
- DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
- if(selectRows>1)
- int[] selRowIndexs=table.getSelectedRows();// 用户所选行的序列
-
- for(int i=0;i     // 用tableModel.getValueAt(row, column)取单元格数据
- String cellValue=(String) tableModel.getValueAt(i, 1);
- }
- }
-
- 六.添加表格的事件处理
- view.getTable().addMouseListener(new MouseListener() {
- public void mousePressed(MouseEvent e) {
- // 鼠标按下时的处理
- }
- public void mouseReleased(MouseEvent e) {
- // 鼠标松开时的处理
- }
- public void mouseEntered(MouseEvent e) {
- // 鼠标进入表格时的处理
- }
- public void mouseExited(MouseEvent e) {
- // 鼠标退出表格时的处理
- }
- public void mouseClicked(MouseEvent e) {
- // 鼠标点击时的处理
- }
- });
- * */
-
+/**
+ * @version 1.0 11/26/98
+ */
 public class LevelWord extends JFrame {
-    // we are using the in-memory H2 database
-    // private final static String DATABASE_URL = "jdbc:h2:mem:LevelDict";
-    // private final static String DATABASE_URL =
-    // "jdbc:h2:file:LevelDict";//C:/data/sample (Windows only)
-    // private final static String DATABASE_URL = "jdbc:h2:./LevelDict.h2";
-    // jdbc:h2:tcp://dbserv:8084/~/sample
 
     /**
-	 * 
-	 */
-    private static final long serialVersionUID = -902723851633869382L;
-
+   * 
+   */
+    private static final long serialVersionUID = -2140084363480237258L;
     // sqlite
     private final static String DATABASE_URL = "jdbc:sqlite:LevelDict.db3";
-
     private static ConnectionSource connectionSource;
     public static WordDaoImpl wordDao;
 
-    private DefaultTableModel tableModel; // 表格模型对象
-    private JTable table;
-    private JTextField aTextField;
-    private JTextField bTextField;
-    private JTextField cTextField;
+    private MultiSpanCellTable fixedTable;
+    private AttributiveCellTableModel fixedTableModel;
 
-    /**
-     * Launch the application.
-     */
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    LevelWord frame = new LevelWord();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                } finally {
-                    // destroy the data source which should close underlying
-                    // connections
-                    // if (connectionSource != null) {
-                    // try {
-                    // //connectionSource.close();
-                    // //connectionSource = null;
-                    // } catch (IOException e) {
-                    // // TODO Auto-generated catch block
-                    // e.printStackTrace();
-                    // }
-                    // }
-                }
-            }
-        });
-    }
-
-    /**
-     * Create the frame.
-     */
-    public LevelWord() throws SQLException {
-        setIconImage(Toolkit.getDefaultToolkit().getImage(
-                "E:\\workspace\\LevelWord_PC\\resoure\\word1.jpg"));
-        setTitle("LevelWord");
-        setBounds(100, 100, 800, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        // String[] columnHeadersNames = { "PartsOfSpeech", "Meaning",
-        // "exampleSentence" }; // 列名
-        // String[][] tableCellValues = { { "A1", "B1", "C1" },
-        // { "A2", "B2", "C2" }, { "A3", "B3", "C3" },
-        // { "A4", "B4", "C4" }, { "A5", "B5", "C5" } }; // 数据
-        // String sqlDrop = "drop table if exists levelWordTable;";
-        // DBUtil.ExecuteUpdate(sqlDrop);
-
-        // final WordDaoImpl wordDao = new WordDaoImpl();
-        // int affectRowCount = wordDao.create();
-        // create our data-source for the database
-
-        // String sqlCreate =
-        // "CREATE TABLE IF NOT EXISTS levelWordTable (frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence);";
-        // int count = dbMgr.executeUpdate(sqlCreate);
-        // String sqlSelect =
-        // "select frequency,spelling,minLevel,partsOfSpeech,meaning,exampleSentence from levelWordTable;";
-        // ResultSet rs = dbMgr.executeQuery(sqlSelect);
-        // // Object[][] tableCellValues = DBUtil.ResultSetToObjectArray(rs);
-        // Vector titleVector = new Vector(); // headVector/column Names/表头集合
-        // Vector cellsVector = new Vector(); // rowsVector/rows data/数据体集合
-        // try {
-        // if (rs != null) {
-        // ResultSetMetaData rsmd = rs.getMetaData();
-        // for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-        // titleVector.addElement(rsmd.getColumnName(i));//
-        // columnNames.add(rsmd.getColumnName(i));
-        // }
-        // while (rs.next()) {
-        // Vector curRow = new Vector();
-        // for (int i = 1; i <= rsmd.getColumnCount(); ++i) {
-        // curRow.addElement(rs.getString(i));// curRow.add(rs.getString(i));
-        // }
-        // curRow.addElement("");
-        // cellsVector.addElement(curRow); // rows.add(curRow);
-        // }
-        // }
-        // } catch (SQLException e1) {
-        // // TODO Auto-generated catch block
-        // e1.printStackTrace();
-        // }
-        // titleVector.addElement("operate");
-
+    LevelWord() {
+        super("Levle word Multi-Span Cell");
+        //setTitle("LevelWord");
+        setIconImage(Toolkit.getDefaultToolkit().getImage("./resoure/word1.jpg"));
+        setSize(800, 600);
+        //setBounds(100, 100, 800, 600);
+//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
         try {
             connectionSource = new JdbcConnectionSource(DATABASE_URL);
             wordDao = new WordDaoImpl(connectionSource);
@@ -304,348 +107,25 @@ public class LevelWord extends JFrame {
             e1.printStackTrace();
         }
 
-        tableModel = new DefaultTableModel(0, 10) {
-            /**
-			 * 
-			 */
-            private static final long serialVersionUID = 2416119554735756716L;
-
-            public boolean isCellEditable(int row, int column) {
-                // JTextField tf = new JTextField();
-                // tf.addKeyListener(new KeyAdapter() {
-                // public void keyReleased(KeyEvent e) {
-                // event(e);
-                // };
-                // });
-                // tf.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
-                // tf.setSelectionStart(0);
-                // tf.setSelectionEnd(tf.getText().length());
-                // table.getColumnModel().getColumn(column)
-                // .setCellEditor(new DefaultCellEditor(tf));
-
-                return true;// 默认是true
-            }
-
-            // private void event(KeyEvent e) {
-            // int row = table.getSelectedRow();
-            // int column = table.getSelectedColumn();
-            //
-            // DefaultCellEditor obj = (DefaultCellEditor) (table
-            // .getColumnModel().getColumn(column).getCellEditor());
-            // if (obj != null) {
-            // JComponent com = (JComponent) obj.getComponent();
-            // Object value = null;
-            // if (com instanceof JTextField) {
-            // value = ((JTextField) com).getText();
-            // } else if (com instanceof JToggleButton) {
-            // value = ((JToggleButton) com).isSelected();
-            // }
-            // System.out.println("row:" + row + " ,column:" + column
-            // + " ,value:" + value);
-            // System.out.println("e.getKeyCode:" + e.getKeyCode());
-            // System.out
-            // .println("KeyEvent.VK_ENTER:" + KeyEvent.VK_ENTER);
-            // switch (e.getKeyCode()) {
-            // case KeyEvent.VK_ENTER:
-            // String id = (String) tableModel.getValueAt(row, 0);
-            // // String rowColumn = (String)
-            // // tableModel.getValueAt(row, column);
-            // String freq = (String) tableModel.getValueAt(row, 1);
-            // Word word = new Word();
-            // word.setId(id);
-            // word.setFrequency(freq);
-            // wordDao.update(word);
-            // break;
-            // case KeyEvent.VK_SPACE:
-            // break;
-            // case KeyEvent.VK_BACK_SPACE:
-            // break;
-            // case KeyEvent.VK_ESCAPE:
-            // break;
-            // case KeyEvent.VK_UP:
-            // break;
-            // case KeyEvent.VK_DOWN:
-            // break;
-            // case KeyEvent.VK_LEFT:
-            // break;
-            // case KeyEvent.VK_RIGHT:
-            // break;
-            // default:
-            // break;
-            // }
-            // }
-            // }
-        };
-        table = new JTable(tableModel);
-        // table.setBackground(Color.white);
-        final MouseInputListener mouseInputListener = getMouseInputListener(table);// 添加鼠标右键选择行
-        table.addMouseListener(mouseInputListener);
-        table.addMouseMotionListener(mouseInputListener);
-        table.setCellSelectionEnabled(true);
-        table.getModel().addTableModelListener(new TableModelListener() {
-            @Override
-            public void tableChanged(TableModelEvent e) {
-                // 当引起TableModel改变的事件是UPDATE时并且是第二列时候:
-                // when table action is update.
-                int row = e.getFirstRow();
-                int column = e.getColumn();
-                System.out.println("tableChanged row:" + row + ",column:"
-                        + column);
-                if (column >= 0) {
-                    TableModel model = (TableModel) e.getSource();
-                    String columnName = model.getColumnName(column);
-                    System.out.println("tableChanged columnName:" + columnName);
-                    Object data = model.getValueAt(row, column);
-                    System.out.println("tableChanged,value:" + data);
-                    if (e.getType() == TableModelEvent.UPDATE) {
-                    }
-                }
-            }
-        });
-
-        // table.setFillsViewportHeight(true);
-        // 1) 设置列不可随容器组件大小变化自动调整宽度.
-        // table.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        // 2) 限制某列的宽度.
-        // TableColumn firsetColumn = table.getColumnModel().getColumn(0);
-        // firsetColumn.setPreferredWidth(30);
-        // firsetColumn.setMaxWidth(30);
-        // firsetColumn.setMinWidth(30);
-        // 3) 设置当前列数.
-        // DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
-        // tableModel.setColumnCount(5);
-        // 4) 取得表格列数
-        // int colCnt = table.getColumnCount();
-        // 5) 添加列
-        // DefaultTableModel tableModel = (DefaultTableModel) table.getModel();
-        // tableModel.addColumn("新列名");
-        // 6) 删除列
-        // table.removeColumn(table.getColumnModel().getColumn(columnIndex));//
-        // columnIndex是要删除的列序号
-
-        table.setRowHeight(30); // 设置行高
-        JScrollPane scrollPane = new JScrollPane(table); // 支持滚动
-        getContentPane().add(scrollPane, BorderLayout.CENTER);
-        // jdk1.6
-        // 排序:
-        // table.setRowSorter(new TableRowSorter(tableModel));
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // 单选
-        // 为表格添加监听器// 鼠标事件
-        table.addMouseListener(new MouseAdapter() {
-            public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2) { // 或 if(e.getClickCount() > 1)
-                                              // 实现双击事件(前提是设置table不能编辑)
-                    int row = ((JTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
-                    int col = ((JTable) e.getSource()).columnAtPoint(e
-                            .getPoint()); // 获得列位置
-                    System.out.println("右键双击鼠标：row=" + row + ",col=" + col);
-                    String cellVal = (String) (tableModel.getValueAt(row, col)); // 获得点击单元格数据
-                    System.out.println("右键双击鼠标：cellVal=" + cellVal);
-                    aTextField.setText((row + 1) + "");
-                    // txtboxCol.setText((col+1)+"");
-                    // txtboxContent.setText(cellVal);
-                } else if (e.getClickCount() == 1) {
-                    int selectedRow = table.getSelectedRow(); // 获得选中行索引
-                    Object oa = tableModel.getValueAt(selectedRow, 0);
-                    Object ob = tableModel.getValueAt(selectedRow, 1);
-                    Object oc = tableModel.getValueAt(selectedRow, 2);
-                    // System.out.println("getClickCount,oa=" + oa);
-                    // System.out.println("getClickCount,ob=" + ob);
-                    // System.out.println("getClickCount,oc=" + oc);
-                    if (oa != null) {
-                        aTextField.setText(oa.toString()); // 给文本框赋值
-                    }
-                    if (ob != null) {
-                        bTextField.setText(ob.toString());
-                    }
-                    if (oc != null) {
-                        cTextField.setText(oc.toString());
-                    }
-                } else {
-                    return;
-                }
-            }
-        });
-        // 监听事件
-        table.getSelectionModel().addListSelectionListener(
-                new ListSelectionListener() {
-                    public void valueChanged(ListSelectionEvent e) {
-                        if (e.getValueIsAdjusting()) {// 连续操作
-                            int rowIndex = table.getSelectedRow();
-                            if (rowIndex != -1) {
-                                System.out.println("表格行被选中" + rowIndex);
-                                // buttonAlt.setEnabled(true);
-                                // buttonDel.setEnabled(true);
-                            }
-                        }
-
-                    }
-                });
-        // 取消表格正在编辑的状态。
-        table.putClientProperty("terminateEditOnFocusLost", Boolean.TRUE);
-        setTableCol();
-        scrollPane.setViewportView(table);
-
-        final JPanel panelNorth = new JPanel();
-        getContentPane().add(panelNorth, BorderLayout.NORTH);
-
-        panelNorth.add(new JLabel("Frequency: "));
-        aTextField = new JTextField("", 6);
-        panelNorth.add(aTextField);
-
-        panelNorth.add(new JLabel("Spelling: "));
-        bTextField = new JTextField("", 20);
-        panelNorth.add(bTextField);
-
-        panelNorth.add(new JLabel("Level: "));
-        cTextField = new JTextField("", 4);
-        panelNorth.add(cTextField);
-
-        final JButton addButton = new JButton("添加"); // 添加按钮
-        addButton.addActionListener(new ActionListener() {// 添加事件
-                    public void actionPerformed(ActionEvent e) {
-                        /*
-                         * String sqlSelect =
-                         * "select COUNT(*) as totalCount from Word where spelling = ? and partsOfSpeech=?"
-                         * ; Object param[] = { bTextField.getText(),
-                         * aTextField.getText() }; DBUtil dbMgr = new DBUtil();
-                         * ResultSet rs = dbMgr.executeQuery(sqlSelect, param);
-                         * int totalCount = 0; try { if (rs.next()) { totalCount
-                         * = rs.getInt("totalCount"); } } catch (SQLException
-                         * e1) { // TODO Auto-generated catch block
-                         * e1.printStackTrace(); } if (totalCount == 0) { //
-                         * insert db String[] rowValues = {
-                         * aTextField.getText(), bTextField.getText(),
-                         * cTextField.getText() }; tableModel.addRow(rowValues);
-                         * // 添加一行 } else if (totalCount == 1) { // update db //
-                         * 写数据库 String sqlUpdate =
-                         * "update partsOfSpeech,meaning,exampleSentence from Word;"
-                         * ; dbMgr.executeUpdate(sqlUpdate); }
-                         */
-                        // 查数据库中是否有相同拼写及词性的记录
-                        // 若不存在,则插入;若存在,则更新(全部字段还是指定字段)/或先删除,后插入,Id会变,
-                        Word word = new Word("159", "Spelling");
-                        word.setLevel("9");
-                        try {
-                            CreateOrUpdateStatus cuStatus = wordDao
-                                    .createOrUpdate(word);
-                            System.out
-                                    .println("CreateOrUpdateStatus.isCreated()="
-                                            + cuStatus.isCreated());
-                            System.out
-                                    .println("CreateOrUpdateStatus.isUpdated()="
-                                            + cuStatus.isUpdated());
-                            System.out
-                                    .println("CreateOrUpdateStatus.getNumLinesChanged()="
-                                            + cuStatus.getNumLinesChanged());
-                            // connectionSource.close();
-                        } catch (SQLException e1) {
-                            // TODO Auto-generated catch block
-                            e1.printStackTrace();
-                        }
-                        // wordDao.select(word);
-                        // wordDao.insert(word);
-                        // wordDao.update(word);
-                        tableModel.addRow(new Object[] { "sitinspring", "35",
-                                "Boss" });
-                        int rowCount = table.getRowCount() + 1; // 行数加上1
-                        System.out.println("actionPerformed rowCount="
-                                + rowCount);
-                        // aTextField.setText("A" + rowCount);
-                        // bTextField.setText("B" + rowCount);
-                        // cTextField.setText("C" + rowCount);
-                        aTextField.setText("");
-                        bTextField.setText("");
-                        cTextField.setText("");
-                    }
-                });
-        panelNorth.add(addButton);
-
-        final JButton updateButton = new JButton("修改"); // 修改按钮
-        updateButton.addActionListener(new ActionListener() {// 添加事件
-                    public void actionPerformed(ActionEvent e) {
-                        int row = table.getSelectedRow();// 获得选中行的索引
-                        if (row != -1) // 是否存在选中行
-                        {
-                            // 修改指定的值：
-                            tableModel.setValueAt(aTextField.getText(), row, 1);
-                            tableModel.setValueAt(bTextField.getText(), row, 2);
-                            tableModel.setValueAt(cTextField.getText(), row, 5);
-                            Word word = new Word();// 其他字段没有设置，会被更新修改清空删除掉
-                            for (int column = 0; column <= 8; column++)
-                                switch (column) {
-                                case 0:
-                                    int id = (int) tableModel.getValueAt(row,
-                                            column);
-                                    word.setId(id);
-                                    break;
-                                case 1:
-                                    String frequency = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setFrequency(frequency);
-                                    break;
-                                case 2:
-                                    String spelling = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setSpelling(spelling);
-                                    break;
-                                case 3:
-                                    String phoneticDJ = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setPhoneticDJ(phoneticDJ);
-                                    break;
-                                case 4:
-                                    String phoneticKK = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setPhoneticKK(phoneticKK);
-                                case 5:
-                                    String level = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setLevel(level);
-                                case 6:
-                                    String partsOfSpeech = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setPartsOfSpeech(partsOfSpeech);
-                                case 7:
-                                    String meanings = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setMeanings(meanings);
-                                case 8:
-                                    String sentences = (String) tableModel
-                                            .getValueAt(row, column);
-                                    word.setSentences(sentences);
-                                default:
-                                    break;
-                                }
-                            System.out.println("del_btn,id=" + word);
-                            try {
-                                LevelWord.wordDao.update(word);
-                            } catch (SQLException e1) {
-                                e1.printStackTrace();
-                            }
-                        }
-                    }
-                });
-        panelNorth.add(updateButton);
-
-        final JButton delButton = new JButton("删除");
-        delButton.addActionListener(new ActionListener() {// 添加事件
-                    public void actionPerformed(ActionEvent e) {
-                        int selectedRow = table.getSelectedRow();// 获得选中行的索引
-                        if (selectedRow != -1) // 存在选中行
-                        {
-                            int id = (int) tableModel
-                                    .getValueAt(selectedRow, 0);
-                            tableModel.removeRow(selectedRow); // 删除行
-                            try {
-                                wordDao.deleteById(String.valueOf(id));
-                            } catch (SQLException e1) {
-                                e1.printStackTrace();
-                            }
-                        }
-                    }
-                });
-        panelNorth.add(delButton);
+        fixedTableModel = new AttributiveCellTableModel(
+                wordDao.selectAll2Vector(), wordDao.getTableTitle());// 10行,6列
+        /*
+         * AttributiveCellTableModel ml = new AttributiveCellTableModel(10,6) {
+         * public Object getValueAt(int row, int col) { return "" + row + ","+
+         * col; } };
+         */
+        fixedTable = new MultiSpanCellTable(fixedTableModel);
+        fixedTable.setCellSelectionEnabled(true);
+        fixedTable.setRowHeight(30); // 设置行高
+        //fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // 单选
+        
+        JScrollPane scrollPane = new JScrollPane(fixedTable);
+        scrollPane.setViewportView(fixedTable);
+        final ICellSpan cellAtt = (ICellSpan) fixedTableModel
+                .getCellAttribute();
+//        cellAtt.combine(new int[] { 0 }, new int[] { 0, 1 });
+//        cellAtt.combine(new int[] { 1, 2 }, new int[] { 0 });
+//        cellAtt.combine(new int[] { 3, 4, 5 }, new int[] { 0 });
 
         final JPanel panelSouth = new JPanel();
         getContentPane().add(panelSouth, BorderLayout.SOUTH);
@@ -653,23 +133,23 @@ public class LevelWord extends JFrame {
         final JButton insertButton = new JButton("插入");
         insertButton.addActionListener(new ActionListener() {// 添加事件
                     public void actionPerformed(ActionEvent e) {
-                        int selectedRow = table.getSelectedRow();// 获得选中行的索引
+                        int selectedRow = fixedTable.getSelectedRow();// 获得选中行的索引
                         if (selectedRow == -1) {// 没有选中的行
                             selectedRow = 0;
                         }
                         if (selectedRow != -1) // 存在选中行
                         {
-                            Word word = new Word("Spelling"
-                                    + (2 * selectedRow + 1));
-                            word.setFrequency("" + (selectedRow * 2 + 1));
-                            word.setLevel("15");
-                            try {
-                                wordDao.create(word);
-                            } catch (SQLException e1) {
-                                e1.printStackTrace();
-                            }
-                            tableModel.addRow(new Object[] { "sitinspring",
-                                    "35", "Boss" });
+//                            Word word = new Word("Spelling"
+//                                    + (2 * selectedRow + 1));
+//                            word.setFrequency("" + (selectedRow * 2 + 1));
+//                            word.setLevel("15");
+//                            try {
+//                                wordDao.create(word);
+//                            } catch (SQLException e1) {
+//                                e1.printStackTrace();
+//                            }
+//                            tableModel.addRow(new Object[] { "sitinspring",
+//                                    "35", "Boss" });
                         }
                     }
                 });
@@ -678,17 +158,109 @@ public class LevelWord extends JFrame {
         final JButton refreshButton = new JButton("刷新");
         refreshButton.addActionListener(new ActionListener() {// 添加事件
                     public void actionPerformed(ActionEvent e) {
-                        // tableModel.setDataVector(wordDao.selectAll2Vector(),
-                        // wordDao.getTableTitle());
-                        tableModel.setDataVector(wordDao.selectAll2Vector(),
-                                wordDao.getTableTitle());
-                        tableModel.fireTableDataChanged();
+                        Vector<Vector<Object>> recordList = wordDao.selectAll2Vector();
+                        fixedTableModel.setDataVector(recordList,wordDao.getTableTitle());
+                        ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
+                        int columnCnt = fixedTableModel.getColumnCount();
+                        for (int nCurColumn = 1; nCurColumn < columnCnt && nCurColumn <= 5; nCurColumn++) {//从第i列开始合并,跳过Id列，
+                            int nStartRow = 0;
+                            Object vStartValue = recordList.get(0).get(nCurColumn>=4?1:nCurColumn);//获取第0行的第i列或第1列的数据
+                            
+                            for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {//从第j行开始与前一行比较
+                                Object vCurValue = recordList.get(nCurRow).get(nCurColumn>=4?1:nCurColumn);//获取第i列或第1列的数据
+                                if (nCurRow == recordList.size()- 1) {
+                                    int spanRowCnt;
+                                    if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
+                                        spanRowCnt = nCurRow-nStartRow; //边界：不包含最后一条记录
+                                    } else{
+                                        spanRowCnt = nCurRow-nStartRow + 1; //边界：包含最后一条记录                                 
+                                    }
+                                    int[] cellVec = new int[spanRowCnt];
+                                    for (int idx = 0; idx < spanRowCnt; idx++) {
+                                        cellVec[idx] = nStartRow+idx;
+                                    }
+                                    if (cellVec.length > 1) {
+                                        cellAtt.combine(cellVec, new int[] {nCurColumn});
+                                    }
+                                    nStartRow = nCurRow;
+                                    vStartValue = vCurValue; 
+                                } else if (!cellEquals(vCurValue, vStartValue)) {
+                                    int spanRowCnt = nCurRow - nStartRow; //边界：不包含最后一条记录
+                                    int[] cellVec = new int[spanRowCnt];  
+                                    for (int idx = 0; idx < spanRowCnt; idx++) {
+                                        cellVec[idx] = nStartRow+idx;
+                                    }
+                                    if (cellVec.length > 1) {
+                                        cellAtt.combine(cellVec, new int[] {nCurColumn});
+                                    }
+                                    nStartRow = nCurRow;
+                                    vStartValue = vCurValue; 
+                                }
+                            }
+                        }
                         setTableCol();
+                        fixedTableModel.fireTableDataChanged();
+                        fixedTable.clearSelection();
+                        fixedTable.revalidate();
+                        fixedTable.repaint();
                     }
                 });
         panelSouth.add(refreshButton);
+        
+        JButton combineBtn = new JButton("Combine");
+        combineBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] columns = fixedTable.getSelectedColumns();
+                int[] rows = fixedTable.getSelectedRows();
+                System.out.println("getSelectedColumns="
+                        + Arrays.toString(columns));
+                System.out.println("getSelectedRows=" + Arrays.toString(rows));
+                cellAtt.combine(rows, columns);
+                // tableModel.changeAllCellAttribute();
+                fixedTable.clearSelection();
+                fixedTable.revalidate();
+                fixedTable.repaint();
+            }
+        });
+        panelSouth.add(combineBtn);
+        
+        JButton splitBtn = new JButton("Split");
+        splitBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int column = fixedTable.getSelectedColumn();
+                int row = fixedTable.getSelectedRow();
+                cellAtt.split(row, column);
+                fixedTable.clearSelection();
+                // revalidate()是把布局管理器对应的容器内的子组件重新计算大小,布局并绘制。
+                // revalidate()是Jcompnent的方法。它并不是立即改变组件的大小，而是标记该组件需要改变大小。
+                // 这样就可以避免了多个组件都要改变大小时带来的重复计算。
+                // 但是，如果想重新计算一个Jframe中的所有组件，就需要调用repaint()方法
+                // validate方法是告诉父容器，“我更新了，你要重绘！”。
+                // 容器自身的重绘，轻量级的方法一般调用repain()。
+                fixedTable.revalidate();
+                fixedTable.repaint();
+            }
+        });
+        panelSouth.add(splitBtn);
+//        
+//        JPanel p_buttons = new JPanel();
+//        p_buttons.setLayout(new GridLayout(2, 1));
+//        p_buttons.add(b_one);
+//        p_buttons.add(b_split);
+//
+//        Box box = new Box(BoxLayout.X_AXIS);
+//        box.add(scrollPane);
+//        box.add(new JSeparator(SwingConstants.HORIZONTAL));
+//        box.add(p_buttons);
+        getContentPane().add(scrollPane);
     }
-
+    
+    public boolean cellEquals(Object self, Object other) {
+        String strSelf = String.valueOf(self).trim();
+        String strOther = String.valueOf(other).trim();
+        return StringUtils.equals(strSelf, strOther);
+    }
+    
     public void setTableCol() {
         // JComboBox comboBox = new JComboBox();
         // comboBox.addItem("分可数名词countable noun(c.)");
@@ -720,7 +292,7 @@ public class LevelWord extends JFrame {
         // 利用TableColumn类中的setCellEditor()方法来设置单元格的编辑器
         // DefaultCellEditor类可以将表格中的单元格设置成下拉框
         // tableColumn.setCellEditor(new DefaultCellEditor(comboBox));
-        TableColumnModel tcm = table.getColumnModel();
+        TableColumnModel tcm = fixedTable.getColumnModel();
         tcm.getColumn(6).setCellEditor(new DefaultCellEditor(comboBox));
         // TableColumn tc = table.getColumn("operate");
         TableColumn tc = tcm.getColumn(9);// 第10列/最后一列
@@ -729,54 +301,25 @@ public class LevelWord extends JFrame {
         tc.setCellEditor(new WordTableCellEditor());
     }
 
-    /*
-     * 添加鼠标右键单击选择监听，并显示右键菜单
-     */
-    private static MouseInputListener getMouseInputListener(final JTable jTable) {
-        return new MouseInputListener() {
-            public void mouseClicked(MouseEvent e) {
-                processEvent(e);
-            }
-
-            public void mousePressed(MouseEvent e) {
-                processEvent(e);
-            }
-
-            public void mouseReleased(MouseEvent e) {
-                processEvent(e);
-                if ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0
-                        && !e.isControlDown() && !e.isShiftDown()) {
-                    // popupMenu.show(tableLyz, e.getX(), e.getY());//右键菜单显示
+    
+    public static void main(String[] args) {
+        LevelWord frame = new LevelWord();
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                System.exit(0);
+                // destroy the data source which should close underlying
+                // connections
+                if (connectionSource != null) {
+                    try {
+                        connectionSource.close();
+                        connectionSource = null;
+                    } catch (IOException ioe) {
+                        // TODO Auto-generated catch block
+                        ioe.printStackTrace();
+                    }
                 }
             }
-
-            public void mouseEntered(MouseEvent e) {
-                processEvent(e);
-            }
-
-            public void mouseExited(MouseEvent e) {
-                processEvent(e);
-            }
-
-            public void mouseDragged(MouseEvent e) {
-                processEvent(e);
-            }
-
-            public void mouseMoved(MouseEvent e) {
-                processEvent(e);
-            }
-
-            private void processEvent(MouseEvent e) {
-                if ((e.getModifiers() & MouseEvent.BUTTON3_MASK) != 0) {
-                    int modifiers = e.getModifiers();
-                    modifiers -= MouseEvent.BUTTON3_MASK;
-                    modifiers |= MouseEvent.BUTTON1_MASK;
-                    MouseEvent ne = new MouseEvent(e.getComponent(), e.getID(),
-                            e.getWhen(), modifiers, e.getX(), e.getY(),
-                            e.getClickCount(), false);
-                    jTable.dispatchEvent(ne);
-                }
-            }
-        };
+        });
+        frame.setVisible(true);
     }
 }

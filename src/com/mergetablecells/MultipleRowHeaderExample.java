@@ -54,7 +54,7 @@ public class MultipleRowHeaderExample extends JFrame {
                 {"Language","1"},
                 {""        ,"2"},
                 {""        ,"3"}};
-        column = new Object[] { "", "" };
+        column = new Object[] { "a column", "b column" };
 
         AttributiveCellTableModel fixedModel = new AttributiveCellTableModel(
                 data, column) {
@@ -75,9 +75,8 @@ public class MultipleRowHeaderExample extends JFrame {
         fixedTable = new MultiSpanCellTable(fixedModel);
         // table = new JTable( model );
         // fixedTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        // fixedTable.setDefaultRenderer(Object.class, new
-        // RowHeaderRenderer(fixedTable));
-        // fixedTable.setGridColor(table.getTableHeader().getBackground());
+//         fixedTable.setDefaultRenderer(Object.class, new RowHeaderRenderer(fixedTable));
+//         fixedTable.setGridColor(fixedTable.getTableHeader().getBackground());
 
         // JScrollPane scroll = new JScrollPane( table );
         JScrollPane scroll = new JScrollPane(fixedTable);
@@ -99,24 +98,24 @@ public class MultipleRowHeaderExample extends JFrame {
         frame.setVisible(true);
     }
 
-    class RowHeaderRenderer extends JLabel implements TableCellRenderer {
-        private static final long serialVersionUID = 7367929138900145414L;
-
-        RowHeaderRenderer(JTable table) {
-            JTableHeader header = table.getTableHeader();
-            setOpaque(true);
-            setBorder(UIManager.getBorder("TableHeader.cellBorder"));
-            setHorizontalAlignment(CENTER);
-            setForeground(header.getForeground());
-            setBackground(header.getBackground());
-            setFont(header.getFont());
-        }
-
-        public Component getTableCellRendererComponent(JTable table,
-                Object value, boolean isSelected, boolean hasFocus, int row,
-                int column) {
-            setText((value == null) ? "" : value.toString());
-            return this;
-        }
-    }
+//    class RowHeaderRenderer extends JLabel implements TableCellRenderer {
+//        private static final long serialVersionUID = 7367929138900145414L;
+//
+//        RowHeaderRenderer(JTable table) {
+//            JTableHeader header = table.getTableHeader();
+//            setOpaque(true);
+//            setBorder(UIManager.getBorder("TableHeader.cellBorder"));
+//            setHorizontalAlignment(CENTER);
+//            setForeground(header.getForeground());
+//            setBackground(header.getBackground());
+//            setFont(header.getFont());
+//        }
+//
+//        public Component getTableCellRendererComponent(JTable table,
+//                Object value, boolean isSelected, boolean hasFocus, int row,
+//                int column) {
+//            setText((value == null) ? "" : value.toString());
+//            return this;
+//        }
+//    }
 }
