@@ -129,7 +129,7 @@ public class AttributiveCellTableModel extends DefaultTableModel {
     public AttributiveCellTableModel(Vector<Vector<Object>> selectAll2Vector,
             Vector<String> tableTitle) {
         setDataVector(selectAll2Vector, tableTitle);
-        cellAtt = new DefaultCellAttribute(selectAll2Vector.size(), tableTitle.size());
+        cellAtt = new DefaultCellAttribute(selectAll2Vector==null?0:selectAll2Vector.size(), tableTitle.size());
     }
 
     public ICellAttribute getCellAttribute() {
@@ -158,4 +158,22 @@ public class AttributiveCellTableModel extends DefaultTableModel {
 //    public void changeAllCellAttribute() {
 //        dataVector = cellAtt.getAllCellValue();
 //    }
+    public boolean isCellEditable(int row, int column) {
+        // JTextField tf = new JTextField();
+        // tf.addKeyListener(new KeyAdapter() {
+        // public void keyReleased(KeyEvent e) {
+        // event(e);
+        // };
+        // });
+        // tf.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        // tf.setSelectionStart(0);
+        // tf.setSelectionEnd(tf.getText().length());
+        // table.getColumnModel().getColumn(column)
+        // .setCellEditor(new DefaultCellEditor(tf));
+        if (column<=2) {
+            return false;// 默认是true
+        }else{
+            return true;
+        }
+    }
 }

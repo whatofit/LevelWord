@@ -48,6 +48,8 @@ import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 
@@ -92,14 +94,15 @@ public class LevelWord extends JFrame {
     private MultiSpanCellTable fixedTable;
     private AttributiveCellTableModel fixedTableModel;
 
-    LevelWord() {
+    public LevelWord() {
         super("Levle word Multi-Span Cell");
-        //setTitle("LevelWord");
-        setIconImage(Toolkit.getDefaultToolkit().getImage("./resoure/word1.jpg"));
+        // setTitle("LevelWord");
+        setIconImage(Toolkit.getDefaultToolkit()
+                .getImage("./resoure/word1.jpg"));
         setSize(800, 600);
-        //setBounds(100, 100, 800, 600);
-//        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
+        // setBounds(100, 100, 800, 600);
+        // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
         try {
             connectionSource = new JdbcConnectionSource(DATABASE_URL);
             wordDao = new WordDaoImpl(connectionSource);
@@ -109,23 +112,41 @@ public class LevelWord extends JFrame {
 
         fixedTableModel = new AttributiveCellTableModel(
                 wordDao.selectAll2Vector(), wordDao.getTableTitle());// 10行,6列
-        /*
-         * AttributiveCellTableModel ml = new AttributiveCellTableModel(10,6) {
-         * public Object getValueAt(int row, int col) { return "" + row + ","+
-         * col; } };
-         */
         fixedTable = new MultiSpanCellTable(fixedTableModel);
         fixedTable.setCellSelectionEnabled(true);
         fixedTable.setRowHeight(30); // 设置行高
-        //fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // 单选
-        
+        // fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //
+        // 单选
+        fixedTable.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                // 当引起TableModel改变的事件是UPDATE时并且是第二列时候:
+                // when table action is update.
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+                System.out.println("tableChanged row:" + row + ",column:"
+                        + column);
+                if (column >= 0) {
+                    AttributiveCellTableModel model = (AttributiveCellTableModel) e
+                            .getSource();
+                    String columnName = model.getColumnName(column);
+                    System.out.println("tableChanged columnName:" + columnName);
+                    Object data = model.getValueAt(row, column);
+                    System.out.println("tableChanged,value:" + data);
+                    if (e.getType() == TableModelEvent.UPDATE) {
+                    }
+                }
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(fixedTable);
         scrollPane.setViewportView(fixedTable);
+        refreshTableModel();
         final ICellSpan cellAtt = (ICellSpan) fixedTableModel
                 .getCellAttribute();
-//        cellAtt.combine(new int[] { 0 }, new int[] { 0, 1 });
-//        cellAtt.combine(new int[] { 1, 2 }, new int[] { 0 });
-//        cellAtt.combine(new int[] { 3, 4, 5 }, new int[] { 0 });
+        // cellAtt.combine(new int[] { 0 }, new int[] { 0, 1 });
+        // cellAtt.combine(new int[] { 1, 2 }, new int[] { 0 });
+        // cellAtt.combine(new int[] { 3, 4, 5 }, new int[] { 0 });
 
         final JPanel panelSouth = new JPanel();
         getContentPane().add(panelSouth, BorderLayout.SOUTH);
@@ -139,17 +160,17 @@ public class LevelWord extends JFrame {
                         }
                         if (selectedRow != -1) // 存在选中行
                         {
-//                            Word word = new Word("Spelling"
-//                                    + (2 * selectedRow + 1));
-//                            word.setFrequency("" + (selectedRow * 2 + 1));
-//                            word.setLevel("15");
-//                            try {
-//                                wordDao.create(word);
-//                            } catch (SQLException e1) {
-//                                e1.printStackTrace();
-//                            }
-//                            tableModel.addRow(new Object[] { "sitinspring",
-//                                    "35", "Boss" });
+                            // Word word = new Word("Spelling"
+                            // + (2 * selectedRow + 1));
+                            // word.setFrequency("" + (selectedRow * 2 + 1));
+                            // word.setLevel("15");
+                            // try {
+                            // wordDao.create(word);
+                            // } catch (SQLException e1) {
+                            // e1.printStackTrace();
+                            // }
+                            // tableModel.addRow(new Object[] { "sitinspring",
+                            // "35", "Boss" });
                         }
                     }
                 });
@@ -158,55 +179,11 @@ public class LevelWord extends JFrame {
         final JButton refreshButton = new JButton("刷新");
         refreshButton.addActionListener(new ActionListener() {// 添加事件
                     public void actionPerformed(ActionEvent e) {
-                        Vector<Vector<Object>> recordList = wordDao.selectAll2Vector();
-                        fixedTableModel.setDataVector(recordList,wordDao.getTableTitle());
-                        ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
-                        int columnCnt = fixedTableModel.getColumnCount();
-                        for (int nCurColumn = 1; nCurColumn < columnCnt && nCurColumn <= 5; nCurColumn++) {//从第i列开始合并,跳过Id列，
-                            int nStartRow = 0;
-                            Object vStartValue = recordList.get(0).get(nCurColumn>=4?1:nCurColumn);//获取第0行的第i列或第1列的数据
-                            
-                            for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {//从第j行开始与前一行比较
-                                Object vCurValue = recordList.get(nCurRow).get(nCurColumn>=4?1:nCurColumn);//获取第i列或第1列的数据
-                                if (nCurRow == recordList.size()- 1) {
-                                    int spanRowCnt;
-                                    if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
-                                        spanRowCnt = nCurRow-nStartRow; //边界：不包含最后一条记录
-                                    } else{
-                                        spanRowCnt = nCurRow-nStartRow + 1; //边界：包含最后一条记录                                 
-                                    }
-                                    int[] cellVec = new int[spanRowCnt];
-                                    for (int idx = 0; idx < spanRowCnt; idx++) {
-                                        cellVec[idx] = nStartRow+idx;
-                                    }
-                                    if (cellVec.length > 1) {
-                                        cellAtt.combine(cellVec, new int[] {nCurColumn});
-                                    }
-                                    nStartRow = nCurRow;
-                                    vStartValue = vCurValue; 
-                                } else if (!cellEquals(vCurValue, vStartValue)) {
-                                    int spanRowCnt = nCurRow - nStartRow; //边界：不包含最后一条记录
-                                    int[] cellVec = new int[spanRowCnt];  
-                                    for (int idx = 0; idx < spanRowCnt; idx++) {
-                                        cellVec[idx] = nStartRow+idx;
-                                    }
-                                    if (cellVec.length > 1) {
-                                        cellAtt.combine(cellVec, new int[] {nCurColumn});
-                                    }
-                                    nStartRow = nCurRow;
-                                    vStartValue = vCurValue; 
-                                }
-                            }
-                        }
-                        setTableCol();
-                        fixedTableModel.fireTableDataChanged();
-                        fixedTable.clearSelection();
-                        fixedTable.revalidate();
-                        fixedTable.repaint();
+                        refreshTableModel();
                     }
                 });
         panelSouth.add(refreshButton);
-        
+
         JButton combineBtn = new JButton("Combine");
         combineBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -223,7 +200,7 @@ public class LevelWord extends JFrame {
             }
         });
         panelSouth.add(combineBtn);
-        
+
         JButton splitBtn = new JButton("Split");
         splitBtn.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -242,25 +219,15 @@ public class LevelWord extends JFrame {
             }
         });
         panelSouth.add(splitBtn);
-//        
-//        JPanel p_buttons = new JPanel();
-//        p_buttons.setLayout(new GridLayout(2, 1));
-//        p_buttons.add(b_one);
-//        p_buttons.add(b_split);
-//
-//        Box box = new Box(BoxLayout.X_AXIS);
-//        box.add(scrollPane);
-//        box.add(new JSeparator(SwingConstants.HORIZONTAL));
-//        box.add(p_buttons);
         getContentPane().add(scrollPane);
     }
-    
+
     public boolean cellEquals(Object self, Object other) {
         String strSelf = String.valueOf(self).trim();
         String strOther = String.valueOf(other).trim();
         return StringUtils.equals(strSelf, strOther);
     }
-    
+
     public void setTableCol() {
         // JComboBox comboBox = new JComboBox();
         // comboBox.addItem("分可数名词countable noun(c.)");
@@ -282,8 +249,14 @@ public class LevelWord extends JFrame {
         // comboBox.addItem("量词 Quantifier(quant.)");
         // comboBox.addItem("复数plural(pl.)");
 
-        String[] items = new String[] { "Snowboarding", "Rowing", "Knitting",
-                "Speed reading", "None of the above" };
+        String[] items = new String[] { "n.", "v.", "vt.", "vi.", "adj.",
+                "adv.", "num.", "int.", "pron.", "prep.", "art.", "conj.",
+                "abbr.", "aux.", "det.", "link-v." };
+        // abbr.(abbreviation) 缩写;
+        // aux.(auxiliary) 助动词
+        // det.(deterninate) 限定词
+        // link-v. (Link Verb) 系动词&连系动词
+
         JComboBox<String> comboBox = new JComboBox<String>(items);
         // Dimension d = comboBox.getPreferredSize();
         // comboBox.setPopupWidth(d.width);
@@ -301,7 +274,57 @@ public class LevelWord extends JFrame {
         tc.setCellEditor(new WordTableCellEditor());
     }
 
-    
+    // 设置table数据
+    public void refreshTableModel() {
+        Vector<Vector<Object>> recordList = wordDao.selectAll2Vector();
+        fixedTableModel.setDataVector(recordList, wordDao.getTableTitle());
+        ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
+        int columnCnt = fixedTableModel.getColumnCount();
+        for (int nCurColumn = 1; nCurColumn < columnCnt && nCurColumn <= 5; nCurColumn++) {// 从第i列开始合并,跳过Id列，
+            int nStartRow = 0;
+            Object vStartValue = recordList.get(0).get(
+                    nCurColumn >= 4 ? 1 : nCurColumn);// 获取第0行的第i列或第1列的数据
+
+            for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {// 从第j行开始与前一行比较
+                Object vCurValue = recordList.get(nCurRow).get(
+                        nCurColumn >= 4 ? 1 : nCurColumn);// 获取第i列或第1列的数据
+                if (nCurRow == recordList.size() - 1) {
+                    int spanRowCnt;
+                    if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
+                        spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
+                    } else {
+                        spanRowCnt = nCurRow - nStartRow + 1; // 边界：包含最后一条记录
+                    }
+                    int[] cellVec = new int[spanRowCnt];
+                    for (int idx = 0; idx < spanRowCnt; idx++) {
+                        cellVec[idx] = nStartRow + idx;
+                    }
+                    if (cellVec.length > 1) {
+                        cellAtt.combine(cellVec, new int[] { nCurColumn });
+                    }
+                    nStartRow = nCurRow;
+                    vStartValue = vCurValue;
+                } else if (!cellEquals(vCurValue, vStartValue)) {
+                    int spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
+                    int[] cellVec = new int[spanRowCnt];
+                    for (int idx = 0; idx < spanRowCnt; idx++) {
+                        cellVec[idx] = nStartRow + idx;
+                    }
+                    if (cellVec.length > 1) {
+                        cellAtt.combine(cellVec, new int[] { nCurColumn });
+                    }
+                    nStartRow = nCurRow;
+                    vStartValue = vCurValue;
+                }
+            }
+        }
+        setTableCol();
+        fixedTableModel.fireTableDataChanged();
+        fixedTable.clearSelection();
+        fixedTable.revalidate();
+        fixedTable.repaint();
+    }
+
     public static void main(String[] args) {
         LevelWord frame = new LevelWord();
         frame.addWindowListener(new WindowAdapter() {
