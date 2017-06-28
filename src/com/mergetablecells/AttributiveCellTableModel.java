@@ -30,7 +30,7 @@ public class AttributiveCellTableModel extends DefaultTableModel {
         // dataVector = new Vector();
         setNumRows(numRows);
         cellAtt = new DefaultCellAttribute(numRows, numColumns);
-        //changeAllCellAttribute();
+        // changeAllCellAttribute();
     }
 
     // public AttributiveCellTableModel(Vector columnNames, int numRows) {
@@ -51,7 +51,7 @@ public class AttributiveCellTableModel extends DefaultTableModel {
     public AttributiveCellTableModel(Object[][] data, Object[] columnNames) {
         setDataVector(data, columnNames);
         cellAtt = new DefaultCellAttribute(data.length, columnNames.length);
-        //changeAllCellAttribute();
+        // changeAllCellAttribute();
     }
 
     //
@@ -129,7 +129,8 @@ public class AttributiveCellTableModel extends DefaultTableModel {
     public AttributiveCellTableModel(Vector<Vector<Object>> selectAll2Vector,
             Vector<String> tableTitle) {
         setDataVector(selectAll2Vector, tableTitle);
-        cellAtt = new DefaultCellAttribute(selectAll2Vector==null?0:selectAll2Vector.size(), tableTitle.size());
+        cellAtt = new DefaultCellAttribute(selectAll2Vector == null ? 0
+                : selectAll2Vector.size(), tableTitle.size());
     }
 
     public ICellAttribute getCellAttribute() {
@@ -155,9 +156,9 @@ public class AttributiveCellTableModel extends DefaultTableModel {
      * command) { cellAtt.changeAttribute(rows, columns, command); }
      */
 
-//    public void changeAllCellAttribute() {
-//        dataVector = cellAtt.getAllCellValue();
-//    }
+    // public void changeAllCellAttribute() {
+    // dataVector = cellAtt.getAllCellValue();
+    // }
     public boolean isCellEditable(int row, int column) {
         // JTextField tf = new JTextField();
         // tf.addKeyListener(new KeyAdapter() {
@@ -170,10 +171,12 @@ public class AttributiveCellTableModel extends DefaultTableModel {
         // tf.setSelectionEnd(tf.getText().length());
         // table.getColumnModel().getColumn(column)
         // .setCellEditor(new DefaultCellEditor(tf));
-        if (column<=2) {
-            return false;// 默认是true
-        }else{
-            return true;
-        }
+
+        // if (column<=2) {
+        // return false;// 默认是true
+        // }else{
+        // return true;
+        // }
+        return false;// 默认是true
     }
 }

@@ -7,6 +7,7 @@ import java.util.Vector;
 import com.j256.ormlite.dao.BaseDaoImpl;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.dao.DaoManager;
+import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.support.ConnectionSource;
 import com.j256.ormlite.table.TableUtils;
 import com.ormlitedao.bean.Word;
@@ -60,7 +61,11 @@ public class WordDaoImpl extends BaseDaoImpl<Word, String>
         Vector<Vector<Object>> cellsVector = new Vector<Vector<Object>>(); // rowsVector/rows
                                                                            // data/数据体集合
         try {
-            List<Word> wordList = wordDao.queryForAll();
+            //List<Word> wordList = wordDao.queryForAll();
+            // List<Word> wordList = wordDao.queryBuilder().orderBy(Word.FIELD_NAME_FREQUENCY, true).query();
+            QueryBuilder<Word, String> qb = wordDao.queryBuilder();
+            qb.orderBy(Word.FIELD_NAME_FREQUENCY, true);
+            List<Word> wordList = qb.query();
             for (Word dbWord : wordList) {
                 // curRow.add(rs.getString(i));//ResultSetMetaData rsmd
                 Vector<Object> curRow = new Vector<Object>();
@@ -81,4 +86,26 @@ public class WordDaoImpl extends BaseDaoImpl<Word, String>
         return cellsVector;
     }
 
+    public Vector<Vector<Object>> findBySpelling(String spelling) {
+        Vector<Vector<Object>> cellsVector = new Vector<Vector<Object>>();
+        try {
+            List<Word> wordList = wordDao.queryForEq(Word.FIELD_NAME_SPELLING, spelling);
+            for (Word dbWord : wordList) {
+                Vector<Object> curRow = new Vector<Object>();
+                curRow.addElement(dbWord.getId());
+                curRow.addElement(dbWord.getFrequency());
+                curRow.addElement(dbWord.getSpelling());
+                curRow.addElement(dbWord.getPhoneticDJ());
+                curRow.addElement(dbWord.getPhoneticKK());
+                curRow.addElement(dbWord.getLevel());
+                curRow.addElement(dbWord.getPartsOfSpeech());
+                curRow.addElement(dbWord.getMeanings());
+                curRow.addElement(dbWord.getSentences());
+                cellsVector.addElement(curRow);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return cellsVector;
+    }
 }

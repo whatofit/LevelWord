@@ -36,18 +36,22 @@ import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Vector;
 
-import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
@@ -57,9 +61,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
+import com.j256.ormlite.table.TableUtils;
 import com.mergetablecells.AttributiveCellTableModel;
 import com.mergetablecells.ICellSpan;
 import com.mergetablecells.MultiSpanCellTable;
+import com.ormlitedao.bean.Word;
 import com.ormlitedao.daoimpl.WordDaoImpl;
 
 /*   ----------------------------------------------
@@ -94,6 +100,8 @@ public class LevelWord extends JFrame {
     private MultiSpanCellTable fixedTable;
     private AttributiveCellTableModel fixedTableModel;
 
+    private NewOrUpdateDialog modifyRecord;
+
     public LevelWord() {
         super("Levle word Multi-Span Cell");
         // setTitle("LevelWord");
@@ -102,10 +110,11 @@ public class LevelWord extends JFrame {
         setSize(800, 600);
         // setBounds(100, 100, 800, 600);
         // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
         try {
             connectionSource = new JdbcConnectionSource(DATABASE_URL);
             wordDao = new WordDaoImpl(connectionSource);
+            //TableUtils.dropTable(connectionSource, Word.class, true);
+            //TableUtils.createTable(connectionSource, Word.class);
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -113,7 +122,7 @@ public class LevelWord extends JFrame {
         fixedTableModel = new AttributiveCellTableModel(
                 wordDao.selectAll2Vector(), wordDao.getTableTitle());// 10行,6列
         fixedTable = new MultiSpanCellTable(fixedTableModel);
-        fixedTable.setCellSelectionEnabled(true);
+        // fixedTable.setCellSelectionEnabled(false);
         fixedTable.setRowHeight(30); // 设置行高
         // fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //
         // 单选
@@ -151,7 +160,7 @@ public class LevelWord extends JFrame {
         final JPanel panelSouth = new JPanel();
         getContentPane().add(panelSouth, BorderLayout.SOUTH);
 
-        final JButton insertButton = new JButton("插入");
+        final JButton insertButton = new JButton("New Word");
         insertButton.addActionListener(new ActionListener() {// 添加事件
                     public void actionPerformed(ActionEvent e) {
                         int selectedRow = fixedTable.getSelectedRow();// 获得选中行的索引
@@ -172,11 +181,12 @@ public class LevelWord extends JFrame {
                             // tableModel.addRow(new Object[] { "sitinspring",
                             // "35", "Boss" });
                         }
+                        modifyRecord = new NewOrUpdateDialog("New or Update the word dialog", "");
                     }
                 });
         panelSouth.add(insertButton);
 
-        final JButton refreshButton = new JButton("刷新");
+        final JButton refreshButton = new JButton("Refresh");
         refreshButton.addActionListener(new ActionListener() {// 添加事件
                     public void actionPerformed(ActionEvent e) {
                         refreshTableModel();
@@ -229,49 +239,56 @@ public class LevelWord extends JFrame {
     }
 
     public void setTableCol() {
-        // JComboBox comboBox = new JComboBox();
-        // comboBox.addItem("分可数名词countable noun(c.)");
-        // comboBox.addItem("不可数名词uncountable noun(u.)");
-        // comboBox.addItem("及物动词verb transitive(vt)");
-        // comboBox.addItem("不及物动词verb intransitive(vi)");
-        // comboBox.addItem("助动词auxiliary verb(aux.v)");
-        // comboBox.addItem("情态动词modal verb");
-        // comboBox.addItem("短语动词phr v(phrasal verb)");
-        // comboBox.addItem("形容词 Adjectives(a./adj.)");
-        // comboBox.addItem("副词 Adverbs(ad./adv.)");
-        // comboBox.addItem("数词 Numeral(num.)");
-        // comboBox.addItem("感叹词 Interjection(interj.) ");
-        // comboBox.addItem("代（名）词 Pronouns(pron.)");
-        // comboBox.addItem("介词 Prepositions(prep.)");
-        // comboBox.addItem("冠词 Article(art.)");
-        // comboBox.addItem("连词 Conjunction（conj.）");
-        // comboBox.addItem("疑问词 Interrogative (int.)");
-        // comboBox.addItem("量词 Quantifier(quant.)");
-        // comboBox.addItem("复数plural(pl.)");
-
-        String[] items = new String[] { "n.", "v.", "vt.", "vi.", "adj.",
-                "adv.", "num.", "int.", "pron.", "prep.", "art.", "conj.",
-                "abbr.", "aux.", "det.", "link-v." };
-        // abbr.(abbreviation) 缩写;
-        // aux.(auxiliary) 助动词
-        // det.(deterninate) 限定词
-        // link-v. (Link Verb) 系动词&连系动词
-
-        JComboBox<String> comboBox = new JComboBox<String>(items);
-        // Dimension d = comboBox.getPreferredSize();
-        // comboBox.setPopupWidth(d.width);
-
-        // TableColumn tableColumn = table.getColumn("partsOfSpeech");
-        // 利用TableColumn类中的setCellEditor()方法来设置单元格的编辑器
-        // DefaultCellEditor类可以将表格中的单元格设置成下拉框
-        // tableColumn.setCellEditor(new DefaultCellEditor(comboBox));
         TableColumnModel tcm = fixedTable.getColumnModel();
-        tcm.getColumn(6).setCellEditor(new DefaultCellEditor(comboBox));
         // TableColumn tc = table.getColumn("operate");
         TableColumn tc = tcm.getColumn(9);// 第10列/最后一列
         tc.setPreferredWidth(120);
         tc.setCellRenderer(new WordTableCellRenderer());
         tc.setCellEditor(new WordTableCellEditor());
+
+        fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // 单选
+        // 为表格添加监听器// 鼠标事件
+        fixedTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) { // 或 if(e.getClickCount() > 1)
+                                              // 实现双击事件(前提是设置table不能编辑)
+                    int row = ((JTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
+                    int col = ((JTable) e.getSource()).columnAtPoint(e
+                            .getPoint()); // 获得列位置
+                    System.out.println("右键双击鼠标：row=" + row + ",col=" + col);
+                    //String cellVal = (String) (fixedTableModel.getValueAt(row,col)); // 获得点击单元格数据
+                    //System.out.println("右键双击鼠标：cellVal=" + cellVal);
+                    String word = (String) (fixedTableModel.getValueAt(row,2));
+                    System.out.println("右键双击鼠标：cur word=" + word);
+                    modifyRecord = new NewOrUpdateDialog("New or Update the word dialog", word);
+                } else if (e.getClickCount() == 1) {
+                    int selectedRow = fixedTable.getSelectedRow(); // 获得选中行索引
+                    Object oa = fixedTableModel.getValueAt(selectedRow, 0);
+                    Object ob = fixedTableModel.getValueAt(selectedRow, 1);
+                    Object oc = fixedTableModel.getValueAt(selectedRow, 2);
+                    System.out.println("单击,getClickCount == 1,oa=" + oa);
+                    System.out.println("单击,getClickCount == 1,ob=" + ob);
+                    System.out.println("单击,getClickCount == 1,oc=" + oc);
+                } else {
+                    return;
+                }
+            }
+        });
+        // 监听事件
+        fixedTable.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        if (e.getValueIsAdjusting()) {// 连续操作
+                            int rowIndex = fixedTable.getSelectedRow();
+                            if (rowIndex != -1) {
+                                System.out.println("表格行被选中" + rowIndex);
+                                // buttonAlt.setEnabled(true);
+                                // buttonDel.setEnabled(true);
+                            }
+                        }
+
+                    }
+                });
     }
 
     // 设置table数据
@@ -280,7 +297,11 @@ public class LevelWord extends JFrame {
         fixedTableModel.setDataVector(recordList, wordDao.getTableTitle());
         ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
         int columnCnt = fixedTableModel.getColumnCount();
-        for (int nCurColumn = 1; nCurColumn < columnCnt && nCurColumn <= 5; nCurColumn++) {// 从第i列开始合并,跳过Id列，
+        for (int nCurColumn = 1; nCurColumn < columnCnt; nCurColumn++) {// 从第i列开始合并,跳过Id列，
+            if (nCurColumn == 6 || nCurColumn == 7 || nCurColumn == 8) {
+                continue;// 这三列不合并
+            }
+
             int nStartRow = 0;
             Object vStartValue = recordList.get(0).get(
                     nCurColumn >= 4 ? 1 : nCurColumn);// 获取第0行的第i列或第1列的数据

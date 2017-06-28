@@ -158,17 +158,17 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
     // }
 
     public void addCellEditorListener(CellEditorListener l) {
-        System.out.println("addCellEditorListener=");
+        // System.out.println("addCellEditorListener=");
         listenerList.add(CellEditorListener.class, l);
     }
 
     public void removeCellEditorListener(CellEditorListener l) {
-        System.out.println("removeCellEditorListener=");
+        // System.out.println("removeCellEditorListener=");
         listenerList.remove(CellEditorListener.class, l);
     }
 
     private void fireEditingStopped() {
-        System.out.println("fireEditingStopped=");
+        // System.out.println("fireEditingStopped=");
         CellEditorListener listener;
         Object[] listeners = listenerList.getListenerList();
         for (int i = 0; i < listeners.length; i++) {
@@ -185,7 +185,7 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
     }
 
     public void cancelCellEditing() {
-        System.out.println("cancelCellEditing=");
+        // System.out.println("cancelCellEditing=");
     }
 
     public boolean stopCellEditing() {
@@ -198,24 +198,24 @@ public class WordTableCellEditor extends JPanel implements TableCellEditor {
 
     public Component getTableCellEditorComponent(JTable table, Object value,
             boolean isSelected, int row, int column) {
-        System.out.println("getTableCellEditorComponent=");
+        // System.out.println("getTableCellEditorComponent=");
         if (value != null)
             edit_txf.setText(value.toString());
         return this;
     }
 
     public boolean isCellEditable(EventObject anEvent) {
-        System.out.println("isCellEditable=");
+        // System.out.println("isCellEditable=");
         return true;
     }
 
     public boolean shouldSelectCell(EventObject anEvent) {
-        System.out.println("shouldSelectCell=");
+        // System.out.println("shouldSelectCell=");
         return true;
     }
 
     public Object getCellEditorValue() {
-        System.out.println("getCellEditorValue=");
+        // System.out.println("getCellEditorValue=");
         return edit_txf.getText();
     }
 
