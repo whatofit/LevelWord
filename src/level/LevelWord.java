@@ -297,55 +297,59 @@ public class LevelWord extends JFrame {
     public void refreshTableModel() {
         Vector<Vector<Object>> recordList = wordDao.selectAll2Vector();
         fixedTableModel.setDataVector(recordList, wordDao.getTableTitle());
-        ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
-        int columnCnt = fixedTableModel.getColumnCount();
-        for (int nCurColumn = 1; nCurColumn < columnCnt; nCurColumn++) {// 从第i列开始合并,跳过Id列，
-            if (nCurColumn == 6 || nCurColumn == 7 || nCurColumn == 8) {
-                continue;// 这三列不合并
-            }
+        if (recordList.size() > 0) {
+            ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
+            int columnCnt = fixedTableModel.getColumnCount();
+            for (int nCurColumn = 1; nCurColumn < columnCnt; nCurColumn++) {// 从第i列开始合并,跳过Id列，
+                if (nCurColumn == 6 || nCurColumn == 7 || nCurColumn == 8) {
+                    continue;// 这三列不合并
+                }
 
-            int nStartRow = 0;
-            Object vStartValue = recordList.get(0).get(
-                    nCurColumn >= 4 ? 1 : nCurColumn);// 获取第0行的第i列或第1列的数据
-
-            for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {// 从第j行开始与前一行比较
-                Object vCurValue = recordList.get(nCurRow).get(
-                        nCurColumn >= 4 ? 1 : nCurColumn);// 获取第i列或第1列的数据
-                if (nCurRow == recordList.size() - 1) {
-                    int spanRowCnt;
-                    if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
-                        spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
-                    } else {
-                        spanRowCnt = nCurRow - nStartRow + 1; // 边界：包含最后一条记录
+                int nStartRow = 0;
+                Object vStartValue = recordList.get(0).get(
+                        nCurColumn >= 4 ? 1 : nCurColumn);// 获取第0行的第i列或第1列的数据
+                for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {// 从第j行开始与前一行比较
+                    Object vCurValue = recordList.get(nCurRow).get(
+                            nCurColumn >= 4 ? 1 : nCurColumn);// 获取第i列或第1列的数据
+                    if (nCurRow == recordList.size() - 1) {
+                        int spanRowCnt;
+                        if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
+                            spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
+                        } else {
+                            spanRowCnt = nCurRow - nStartRow + 1; // 边界：包含最后一条记录
+                        }
+                        int[] cellVec = new int[spanRowCnt];
+                        for (int idx = 0; idx < spanRowCnt; idx++) {
+                            cellVec[idx] = nStartRow + idx;
+                        }
+                        if (cellVec.length > 1) {
+                            cellAtt.combine(cellVec, new int[] { nCurColumn });
+                        }
+                        nStartRow = nCurRow;
+                        vStartValue = vCurValue;
+                    } else if (!cellEquals(vCurValue, vStartValue)) {
+                        int spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
+                        int[] cellVec = new int[spanRowCnt];
+                        for (int idx = 0; idx < spanRowCnt; idx++) {
+                            cellVec[idx] = nStartRow + idx;
+                        }
+                        if (cellVec.length > 1) {
+                            cellAtt.combine(cellVec, new int[] { nCurColumn });
+                        }
+                        nStartRow = nCurRow;
+                        vStartValue = vCurValue;
                     }
-                    int[] cellVec = new int[spanRowCnt];
-                    for (int idx = 0; idx < spanRowCnt; idx++) {
-                        cellVec[idx] = nStartRow + idx;
-                    }
-                    if (cellVec.length > 1) {
-                        cellAtt.combine(cellVec, new int[] { nCurColumn });
-                    }
-                    nStartRow = nCurRow;
-                    vStartValue = vCurValue;
-                } else if (!cellEquals(vCurValue, vStartValue)) {
-                    int spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
-                    int[] cellVec = new int[spanRowCnt];
-                    for (int idx = 0; idx < spanRowCnt; idx++) {
-                        cellVec[idx] = nStartRow + idx;
-                    }
-                    if (cellVec.length > 1) {
-                        cellAtt.combine(cellVec, new int[] { nCurColumn });
-                    }
-                    nStartRow = nCurRow;
-                    vStartValue = vCurValue;
                 }
             }
         }
         setTableCol();
         fixedTableModel.fireTableDataChanged();
+        // getContentPane().add(scrollPane, BorderLayout.CENTER);
         fixedTable.clearSelection();
         fixedTable.revalidate();
+        // fixedTable.validate();
         fixedTable.repaint();
+        // fixedTable.updateUI();
     }
 
     public static void main(String[] args) {

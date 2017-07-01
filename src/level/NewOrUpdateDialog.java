@@ -70,8 +70,10 @@ public class NewOrUpdateDialog extends JDialog {
         titleVector.addElement(Word.FIELD_NAME_SENTENCES);
         Vector<Vector<Object>> tableData = LevelWord.wordDao
                 .findBySpelling(wordSpelling);
-        aTextField.setText((String) tableData.get(0).get(1));
-        cTextField.setText((String) tableData.get(0).get(5));
+        if (tableData.size() > 0) {
+            aTextField.setText((String) tableData.get(0).get(1));
+            cTextField.setText((String) tableData.get(0).get(5));
+        }
         wordsTableModel = new DefaultTableModel(tableData, titleVector) {
             public boolean isCellEditable(int row, int column) {
                 if (column <= 5) {
@@ -161,7 +163,18 @@ public class NewOrUpdateDialog extends JDialog {
                 String DJ = (String) wordsTableModel.getValueAt(0, 3);
                 String KK = (String) wordsTableModel.getValueAt(0, 4);
                 String level = (String) wordsTableModel.getValueAt(0, 5);
-                
+
+                if (spelling == null || spelling.trim().length() == 0) {
+                    spelling = bTextField.getText();
+                }
+                if (freq == null || freq.trim().length() == 0) {
+                    freq = aTextField.getText();
+                }
+
+                if (level == null || level.trim().length() == 0) {
+                    level = cTextField.getText();
+                }
+
                 for (int row = 0; row < wordsTableModel.getRowCount(); row++) {
                     Word dbWord = new Word();
                     Object column1 = wordsTableModel.getValueAt(row, 0);
@@ -180,8 +193,10 @@ public class NewOrUpdateDialog extends JDialog {
                             7);
                     String sentences = (String) wordsTableModel.getValueAt(row,
                             8);
-                    if (pos != null && pos.trim().length() > 0 || meanings != null && meanings.trim().length() > 0
-                            || sentences != null && sentences.trim().length() > 0) {
+                    if (pos != null && pos.trim().length() > 0
+                            || meanings != null && meanings.trim().length() > 0
+                            || sentences != null
+                            && sentences.trim().length() > 0) {
                         dbWord.setFrequency(freq);
                         dbWord.setSpelling(spelling);
                         dbWord.setPhoneticDJ(DJ);
