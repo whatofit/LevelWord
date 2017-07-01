@@ -87,7 +87,6 @@ import com.ormlitedao.daoimpl.WordDaoImpl;
  * @version 1.0 11/26/98
  */
 public class LevelWord extends JFrame {
-
     /**
    * 
    */
@@ -113,8 +112,8 @@ public class LevelWord extends JFrame {
         try {
             connectionSource = new JdbcConnectionSource(DATABASE_URL);
             wordDao = new WordDaoImpl(connectionSource);
-            //TableUtils.dropTable(connectionSource, Word.class, true);
-            //TableUtils.createTable(connectionSource, Word.class);
+            // TableUtils.dropTable(connectionSource, Word.class, true);
+            // TableUtils.createTable(connectionSource, Word.class);
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -181,7 +180,8 @@ public class LevelWord extends JFrame {
                             // tableModel.addRow(new Object[] { "sitinspring",
                             // "35", "Boss" });
                         }
-                        modifyRecord = new NewOrUpdateDialog("New or Update the word dialog", "");
+                        modifyRecord = new NewOrUpdateDialog(
+                                "New or Update the word dialog", "");
                     }
                 });
         panelSouth.add(insertButton);
@@ -256,11 +256,13 @@ public class LevelWord extends JFrame {
                     int col = ((JTable) e.getSource()).columnAtPoint(e
                             .getPoint()); // 获得列位置
                     System.out.println("右键双击鼠标：row=" + row + ",col=" + col);
-                    //String cellVal = (String) (fixedTableModel.getValueAt(row,col)); // 获得点击单元格数据
-                    //System.out.println("右键双击鼠标：cellVal=" + cellVal);
-                    String word = (String) (fixedTableModel.getValueAt(row,2));
+                    // String cellVal = (String)
+                    // (fixedTableModel.getValueAt(row,col)); // 获得点击单元格数据
+                    // System.out.println("右键双击鼠标：cellVal=" + cellVal);
+                    String word = (String) (fixedTableModel.getValueAt(row, 2));
                     System.out.println("右键双击鼠标：cur word=" + word);
-                    modifyRecord = new NewOrUpdateDialog("New or Update the word dialog", word);
+                    modifyRecord = new NewOrUpdateDialog(
+                            "New or Update the word dialog", word);
                 } else if (e.getClickCount() == 1) {
                     int selectedRow = fixedTable.getSelectedRow(); // 获得选中行索引
                     Object oa = fixedTableModel.getValueAt(selectedRow, 0);
@@ -350,7 +352,6 @@ public class LevelWord extends JFrame {
         LevelWord frame = new LevelWord();
         frame.addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
-                System.exit(0);
                 // destroy the data source which should close underlying
                 // connections
                 if (connectionSource != null) {
@@ -362,6 +363,7 @@ public class LevelWord extends JFrame {
                         ioe.printStackTrace();
                     }
                 }
+                System.exit(0);
             }
         });
         frame.setVisible(true);
