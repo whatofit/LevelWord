@@ -61,11 +61,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
-import com.j256.ormlite.table.TableUtils;
 import com.mergetablecells.AttributiveCellTableModel;
 import com.mergetablecells.ICellSpan;
 import com.mergetablecells.MultiSpanCellTable;
-import com.ormlitedao.bean.Word;
 import com.ormlitedao.daoimpl.WordDaoImpl;
 
 /*   ----------------------------------------------
@@ -296,12 +294,9 @@ public class LevelWord extends JFrame {
     // 设置table数据
     public void refreshTableModel() {
         Vector<Vector<Object>> recordList = wordDao.selectAll2Vector();
-        fixedTableModel.setDataVector(recordList, wordDao.getTableTitle());
-        //更加数据后，为了表格合并，需要要先刷新一次，
-        //fixedTableModel.fireTableDataChanged();
-        //fixedTable.clearSelection();
-        //fixedTable.revalidate();
-        //fixedTable.repaint();
+        // fixedTableModel.setDataVector(recordList, wordDao.getTableTitle());
+        fixedTableModel.updateData(recordList, wordDao.getTableTitle());
+
         if (recordList.size() > 0) {
             ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
             int columnCnt = fixedTableModel.getColumnCount();

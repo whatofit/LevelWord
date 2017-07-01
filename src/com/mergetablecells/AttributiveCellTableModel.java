@@ -133,6 +133,13 @@ public class AttributiveCellTableModel extends DefaultTableModel {
                 : selectAll2Vector.size(), tableTitle.size());
     }
 
+    //增加或减少行数，若不改变cellAtt的size值，重绘时会引起下标越界异常
+    public void updateData(Vector<Vector<Object>> selectAll2Vector,Vector<String> tableTitle) {
+        setDataVector(selectAll2Vector, tableTitle);
+        //cellAtt.reSize();
+        cellAtt = new DefaultCellAttribute(selectAll2Vector == null ? 0: selectAll2Vector.size(), tableTitle.size());
+    }
+    
     public ICellAttribute getCellAttribute() {
         return cellAtt;
     }

@@ -156,7 +156,30 @@ public class NewOrUpdateDialog extends JDialog {
                 // if (wordsTable.isEditing()) {
                 // wordsTable.getCellEditor().stopCellEditing();
                 // }
-
+                String aTxtFreq = aTextField.getText();
+                String bTxtSpelling = bTextField.getText();
+                String cTxtLevel = cTextField.getText();
+                if (wordsTableModel.getRowCount() == 0 ) {
+                    if (bTxtSpelling.trim().length() == 0) {
+                        //提示无添加或无更新
+                        return;
+                    }else if (bTxtSpelling.trim().length() > 0) {
+                        Word dbWord = new Word();
+                        dbWord.setFrequency(aTxtFreq);
+                        dbWord.setSpelling(bTxtSpelling);
+                        dbWord.setLevel(cTxtLevel);
+                        try {
+                            // LevelWord.wordDao.update(dbWord);
+                            CreateOrUpdateStatus cuStatus = LevelWord.wordDao
+                                    .createOrUpdate(dbWord);
+                            System.out.println("cuStatus:" + cuStatus.isCreated()
+                                    + "" + cuStatus.isUpdated());
+                        } catch (SQLException e1) {
+                            e1.printStackTrace();
+                        }    
+                    }
+                    return;
+                }
                 // 只取第一行数据
                 String freq = (String) wordsTableModel.getValueAt(0, 1);
                 String spelling = (String) wordsTableModel.getValueAt(0, 2);
@@ -165,14 +188,14 @@ public class NewOrUpdateDialog extends JDialog {
                 String level = (String) wordsTableModel.getValueAt(0, 5);
 
                 if (spelling == null || spelling.trim().length() == 0) {
-                    spelling = bTextField.getText();
+                    spelling = bTxtSpelling;
                 }
                 if (freq == null || freq.trim().length() == 0) {
-                    freq = aTextField.getText();
+                    freq = aTxtFreq;
                 }
 
                 if (level == null || level.trim().length() == 0) {
-                    level = cTextField.getText();
+                    level = cTxtLevel;
                 }
 
                 for (int row = 0; row < wordsTableModel.getRowCount(); row++) {

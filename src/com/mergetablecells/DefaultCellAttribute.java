@@ -33,6 +33,7 @@ public class DefaultCellAttribute implements ICellAttribute, ICellSpan {
 
     public DefaultCellAttribute(int numRows, int numColumns) {
         setSize(new Dimension(numColumns, numRows));
+        initValue();
     }
 
     // 设置单元格行列方向上，跨度都为1，即单元格无跨度，原始状态
@@ -45,19 +46,19 @@ public class DefaultCellAttribute implements ICellAttribute, ICellSpan {
         }
     }
 
-//    // 设置单元格的值，起始x/y 宽/width高/height
-//    public Vector<Object> getAllCellValue() {
-//        Vector<Object> cellsVector = new Vector<Object>();
-//        for (int i = 0; i < span.length; i++) {
-//            Vector<Object> v = new Vector<Object>();
-//            for (int j = 0; j < span[i].length; j++) {
-//                v.add(span[i][j][ICellSpan.ROW] + " X "
-//                        + span[i][j][ICellSpan.COLUMN]);
-//            }
-//            cellsVector.add(v);
-//        }
-//        return cellsVector;
-//    }
+    // // 设置单元格的值，起始x/y 宽/width高/height
+    // public Vector<Object> getAllCellValue() {
+    // Vector<Object> cellsVector = new Vector<Object>();
+    // for (int i = 0; i < span.length; i++) {
+    // Vector<Object> v = new Vector<Object>();
+    // for (int j = 0; j < span[i].length; j++) {
+    // v.add(span[i][j][ICellSpan.ROW] + " X "
+    // + span[i][j][ICellSpan.COLUMN]);
+    // }
+    // cellsVector.add(v);
+    // }
+    // return cellsVector;
+    // }
 
     //
     // CellSpan
@@ -249,8 +250,16 @@ public class DefaultCellAttribute implements ICellAttribute, ICellSpan {
         // foreground = new Color[rowSize][columnSize];
         // background = new Color[rowSize][columnSize];
         // font = new Font[rowSize][columnSize];
-        initValue();
     }
+
+    // public void reSize(Dimension size) {
+    // columnSize = size.width;
+    // rowSize = size.height;
+    // span = new int[rowSize][columnSize][2]; // 2: COLUMN,ROW
+    // // foreground = new Color[rowSize][columnSize];
+    // // background = new Color[rowSize][columnSize];
+    // // font = new Font[rowSize][columnSize];
+    // }
 
     /*
      * public void changeAttribute(int row, int column, Object command) { }
