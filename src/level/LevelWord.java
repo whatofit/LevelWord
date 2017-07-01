@@ -297,20 +297,25 @@ public class LevelWord extends JFrame {
     public void refreshTableModel() {
         Vector<Vector<Object>> recordList = wordDao.selectAll2Vector();
         fixedTableModel.setDataVector(recordList, wordDao.getTableTitle());
+        //更加数据后，为了表格合并，需要要先刷新一次，
+        //fixedTableModel.fireTableDataChanged();
+        //fixedTable.clearSelection();
+        //fixedTable.revalidate();
+        //fixedTable.repaint();
         if (recordList.size() > 0) {
             ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
             int columnCnt = fixedTableModel.getColumnCount();
             for (int nCurColumn = 1; nCurColumn < columnCnt; nCurColumn++) {// 从第i列开始合并,跳过Id列，
-                if (nCurColumn == 6 || nCurColumn == 7 || nCurColumn == 8) {
+                if (6 <= nCurColumn && nCurColumn <= 9) {
                     continue;// 这三列不合并
                 }
 
                 int nStartRow = 0;
                 Object vStartValue = recordList.get(0).get(
-                        nCurColumn >= 4 ? 1 : nCurColumn);// 获取第0行的第i列或第1列的数据
+                        nCurColumn > 2 ? 2 : nCurColumn);// 获取第0行，第nCurColumn列或第2列单词拼写字段的数据
                 for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {// 从第j行开始与前一行比较
                     Object vCurValue = recordList.get(nCurRow).get(
-                            nCurColumn >= 4 ? 1 : nCurColumn);// 获取第i列或第1列的数据
+                            nCurColumn > 2 ? 2 : nCurColumn);// 获取第nCurRow行，第nCurColumn列或第2列单词拼写字段的数据
                     if (nCurRow == recordList.size() - 1) {
                         int spanRowCnt;
                         if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
