@@ -2,7 +2,10 @@ package com.ormlitedao.bean;
 
 import java.util.List;
 
-//(多人)情景对话：
+//talk
+//conversation
+//dialogue
+//(多人)情景对话/情景会话:：
 //比如A,B,C,D 四人对话
 //D,sents
 //C,sents
