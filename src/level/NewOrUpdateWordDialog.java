@@ -24,7 +24,7 @@ import com.ormlitedao.bean.Word;
 
 //Create/New/Insert
 //Modify/Append/Update
-public class NewOrUpdateDialog extends JDialog {
+public class NewOrUpdateWordDialog extends JDialog {
     private static final long serialVersionUID = 1L;
 
     private JTextField aTextField;
@@ -37,7 +37,7 @@ public class NewOrUpdateDialog extends JDialog {
     // 1.当word不为空，查询数据库，并展示，
     // 2.当word为空，不查询数据库
     // 3.当用户输入或修改word并确认，(实时)重新查询数据库，并展示。
-    public NewOrUpdateDialog(String dialogTitle, String wordSpelling) {
+    public NewOrUpdateWordDialog(String dialogTitle, String wordSpelling) {
         setTitle(dialogTitle);
         setBounds(20, 60, 700, 400);
 
@@ -299,7 +299,7 @@ public class NewOrUpdateDialog extends JDialog {
                     // "成功", JOptionPane.PLAIN_MESSAGE);
                     // con.close();
                 } catch (Exception ee) {
-                    JOptionPane.showMessageDialog(NewOrUpdateDialog.this,
+                    JOptionPane.showMessageDialog(NewOrUpdateWordDialog.this,
                             "更新失败" + ee, "失败", JOptionPane.ERROR_MESSAGE);
                 }
             }

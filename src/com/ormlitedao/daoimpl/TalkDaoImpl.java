@@ -30,23 +30,13 @@ public class TalkDaoImpl extends BaseDaoImpl<Talk, String>
         Vector<String> titleVector = new Vector<String>(); // headVector/column
                                                            // Names/表头集合
         try {
-            // GenericRawResults<String[]> rawResults =
-            // talkDao.queryRaw("select * from " + wordDao.getTableName());
-            // if (rawResults == null) {
-            // System.out.println("rawResults == null");
-            // } else {
-            // //List<String[]> results = rawResults.getResults();
-            // String[] columnNames = rawResults.getColumnNames();
-            // titleVector = new Vector<String>(Arrays.asList(columnNames));//
-            // array -> vector
-            // }
             titleVector.addElement("id");
-            titleVector.addElement(Talk.FIELD_NAME_CATEGORY);
-            titleVector.addElement(Talk.FIELD_NAME_OCCASION);
             titleVector.addElement(Talk.FIELD_NAME_ENGLISH_TITLE);
             titleVector.addElement(Talk.FIELD_NAME_CHINESE_TITLE);
-            titleVector.addElement(Talk.FIELD_NAME_TALK_TEXT);
+            titleVector.addElement(Talk.FIELD_NAME_CATEGORY);
+            titleVector.addElement(Talk.FIELD_NAME_OCCASION);
             titleVector.addElement(Talk.FIELD_NAME_LEVEL);
+            titleVector.addElement(Talk.FIELD_NAME_TALK_TEXT);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -67,10 +57,11 @@ public class TalkDaoImpl extends BaseDaoImpl<Talk, String>
                 // curRow.add(rs.getString(i));//ResultSetMetaData rsmd
                 Vector<Object> curRow = new Vector<Object>();
                 curRow.addElement(dbTalk.getId());
-                curRow.addElement(dbTalk.getCategory());
-                curRow.addElement(dbTalk.getOccasion());
                 curRow.addElement(dbTalk.getEnglishTitle());
                 curRow.addElement(dbTalk.getChineseTitle());
+                curRow.addElement(dbTalk.getCategory());
+                curRow.addElement(dbTalk.getOccasion());
+                curRow.addElement(dbTalk.getLevel());
                 curRow.addElement(dbTalk.getTalkText());
                 
                 cellsVector.addElement(curRow); // rows.add(curRow);
@@ -81,19 +72,20 @@ public class TalkDaoImpl extends BaseDaoImpl<Talk, String>
         return cellsVector;
     }
 
+    //只查找talk
     public Vector<Vector<Object>> findBySpelling(String englishTitle) {
         Vector<Vector<Object>> cellsVector = new Vector<Vector<Object>>();
         try {
-            List<Talk> wordList = talkDao.queryForEq(Talk.FIELD_NAME_ENGLISH_TITLE, englishTitle);
-            for (Talk dbTalk : wordList) {
+            List<Talk> talkList = talkDao.queryForEq(Talk.FIELD_NAME_ENGLISH_TITLE, englishTitle);
+            for (Talk dbTalk : talkList) {
                 Vector<Object> curRow = new Vector<Object>();
                 curRow.addElement(dbTalk.getId());
-                curRow.addElement(dbTalk.getCategory());
-                curRow.addElement(dbTalk.getOccasion());
                 curRow.addElement(dbTalk.getEnglishTitle());
                 curRow.addElement(dbTalk.getChineseTitle());
-                curRow.addElement(dbTalk.getTalkText());
+                curRow.addElement(dbTalk.getCategory());
+                curRow.addElement(dbTalk.getOccasion());
                 curRow.addElement(dbTalk.getLevel());
+                curRow.addElement(dbTalk.getTalkText());
                 cellsVector.addElement(curRow);
             }
         } catch (SQLException e) {

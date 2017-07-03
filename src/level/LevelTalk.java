@@ -41,7 +41,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Vector;
 
 import javax.swing.JButton;
@@ -63,312 +65,318 @@ import com.j256.ormlite.support.ConnectionSource;
 import com.mergetablecells.AttributiveCellTableModel;
 import com.mergetablecells.ICellSpan;
 import com.mergetablecells.MultiSpanCellTable;
+import com.ormlitedao.bean.Talk;
 import com.ormlitedao.daoimpl.TalkDaoImpl;
 
 /*   ----------------------------------------------
-*  |         SNo.        |
-*   ----------------------------------------------
-*  |          |     1    |
-*  |   Name   |-----------------------------------
-*  |          |     2    |
-*   ----------------------------------------------
-*  |          |     1    |
-*  |          |-----------------------------------
-*  | Language |     2    |
-*  |          |-----------------------------------
-*  |          |     3    |
-*   ----------------------------------------------
-*/
+ *  |         SNo.        |
+ *   ----------------------------------------------
+ *  |          |     1    |
+ *  |   Name   |-----------------------------------
+ *  |          |     2    |
+ *   ----------------------------------------------
+ *  |          |     1    |
+ *  |          |-----------------------------------
+ *  | Language |     2    |
+ *  |          |-----------------------------------
+ *  |          |     3    |
+ *   ----------------------------------------------
+ */
 
 /**
-* @version 1.0 11/26/98
-*/
+ * @version 1.0 11/26/98
+ */
 public class LevelTalk extends JFrame {
-  /**
+    /**
  * 
  */
-  private static final long serialVersionUID = -2140084363480237258L;
-  // sqlite
-  private final static String DATABASE_URL = "jdbc:sqlite:LevelDict.db3";
-  private static ConnectionSource connectionSource;
-  public static TalkDaoImpl wordDao;
+    private static final long serialVersionUID = -2140084363480237258L;
+    // sqlite
+    private final static String DATABASE_URL = "jdbc:sqlite:LevelDict.db3";
+    private static ConnectionSource connectionSource;
+    public static TalkDaoImpl talkDao;
 
-  private MultiSpanCellTable fixedTable;
-  private AttributiveCellTableModel fixedTableModel;
+    private MultiSpanCellTable fixedTable;
+    private AttributiveCellTableModel fixedTableModel;
 
-  private NewOrUpdateDialog modifyRecord;
+    private NewOrUpdateTalkDialog modifyRecord;
 
-  public LevelTalk() {
-      super("Levle word Multi-Span Cell");
-      // setTitle("LevelWord");
-      setIconImage(Toolkit.getDefaultToolkit()
-              .getImage("./resoure/word1.jpg"));
-      setSize(800, 600);
-      // setBounds(100, 100, 800, 600);
-      // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      try {
-          connectionSource = new JdbcConnectionSource(DATABASE_URL);
-          wordDao = new TalkDaoImpl(connectionSource);
-          // TableUtils.dropTable(connectionSource, Word.class, true);
-          // TableUtils.createTable(connectionSource, Word.class);
-      } catch (Exception e1) {
-          e1.printStackTrace();
-      }
+    public LevelTalk() {
+        super("Levle talk Multi-Span Cell");
+        setIconImage(Toolkit.getDefaultToolkit()
+                .getImage("./resoure/word1.jpg"));
+        setSize(800, 600);
+        // setBounds(100, 100, 800, 600);
+        // setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        try {
+            connectionSource = new JdbcConnectionSource(DATABASE_URL);
+            talkDao = new TalkDaoImpl(connectionSource);
+            // TableUtils.dropTable(connectionSource, Talk.class, true);
+            // TableUtils.createTable(connectionSource, Talk.class);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
 
-      fixedTableModel = new AttributiveCellTableModel(
-              wordDao.selectAll2Vector(), wordDao.getTableTitle());// 10行,6列
-      fixedTable = new MultiSpanCellTable(fixedTableModel);
-      // fixedTable.setCellSelectionEnabled(false);
-      fixedTable.setRowHeight(30); // 设置行高
-      // fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //
-      // 单选
-      fixedTable.getModel().addTableModelListener(new TableModelListener() {
-          @Override
-          public void tableChanged(TableModelEvent e) {
-              // 当引起TableModel改变的事件是UPDATE时并且是第二列时候:
-              // when table action is update.
-              int row = e.getFirstRow();
-              int column = e.getColumn();
-              System.out.println("tableChanged row:" + row + ",column:"
-                      + column);
-              if (column >= 0) {
-                  AttributiveCellTableModel model = (AttributiveCellTableModel) e
-                          .getSource();
-                  String columnName = model.getColumnName(column);
-                  System.out.println("tableChanged columnName:" + columnName);
-                  Object data = model.getValueAt(row, column);
-                  System.out.println("tableChanged,value:" + data);
-                  if (e.getType() == TableModelEvent.UPDATE) {
-                  }
-              }
-          }
-      });
+        fixedTableModel = new AttributiveCellTableModel(
+                talkDao.selectAll2Vector(), talkDao.getTableTitle());// 10行,6列
+        fixedTable = new MultiSpanCellTable(fixedTableModel);
+        // fixedTable.setCellSelectionEnabled(false);
+        fixedTable.setRowHeight(30); // 设置行高
+        // fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); //
+        // 单选
+        fixedTable.getModel().addTableModelListener(new TableModelListener() {
+            @Override
+            public void tableChanged(TableModelEvent e) {
+                // 当引起TableModel改变的事件是UPDATE时并且是第二列时候:
+                // when table action is update.
+                int row = e.getFirstRow();
+                int column = e.getColumn();
+                System.out.println("tableChanged row:" + row + ",column:"
+                        + column);
+                if (column >= 0) {
+                    AttributiveCellTableModel model = (AttributiveCellTableModel) e
+                            .getSource();
+                    String columnName = model.getColumnName(column);
+                    System.out.println("tableChanged columnName:" + columnName);
+                    Object data = model.getValueAt(row, column);
+                    System.out.println("tableChanged,value:" + data);
+                    if (e.getType() == TableModelEvent.UPDATE) {
+                    }
+                }
+            }
+        });
 
-      JScrollPane scrollPane = new JScrollPane(fixedTable);
-      scrollPane.setViewportView(fixedTable);
-      refreshTableModel();
-      final ICellSpan cellAtt = (ICellSpan) fixedTableModel
-              .getCellAttribute();
-      // cellAtt.combine(new int[] { 0 }, new int[] { 0, 1 });
-      // cellAtt.combine(new int[] { 1, 2 }, new int[] { 0 });
-      // cellAtt.combine(new int[] { 3, 4, 5 }, new int[] { 0 });
+        JScrollPane scrollPane = new JScrollPane(fixedTable);
+        scrollPane.setViewportView(fixedTable);
+        refreshTableModel();
+        final ICellSpan cellAtt = (ICellSpan) fixedTableModel
+                .getCellAttribute();
+        // cellAtt.combine(new int[] { 0 }, new int[] { 0, 1 });
+        // cellAtt.combine(new int[] { 1, 2 }, new int[] { 0 });
+        // cellAtt.combine(new int[] { 3, 4, 5 }, new int[] { 0 });
 
-      final JPanel panelSouth = new JPanel();
-      getContentPane().add(panelSouth, BorderLayout.SOUTH);
+        final JPanel panelSouth = new JPanel();
+        getContentPane().add(panelSouth, BorderLayout.SOUTH);
 
-      final JButton insertButton = new JButton("New Word");
-      insertButton.addActionListener(new ActionListener() {// 添加事件
-                  public void actionPerformed(ActionEvent e) {
-                      int selectedRow = fixedTable.getSelectedRow();// 获得选中行的索引
-                      if (selectedRow == -1) {// 没有选中的行
-                          selectedRow = 0;
-                      }
-                      if (selectedRow != -1) // 存在选中行
-                      {
-                          // Word word = new Word("Spelling"
-                          // + (2 * selectedRow + 1));
-                          // word.setFrequency("" + (selectedRow * 2 + 1));
-                          // word.setLevel("15");
-                          // try {
-                          // wordDao.create(word);
-                          // } catch (SQLException e1) {
-                          // e1.printStackTrace();
-                          // }
-                          // tableModel.addRow(new Object[] { "sitinspring",
-                          // "35", "Boss" });
-                      }
-                      modifyRecord = new NewOrUpdateDialog(
-                              "New or Update the word dialog", "");
-                  }
-              });
-      panelSouth.add(insertButton);
+        final JButton insertButton = new JButton("New Talk");
+        insertButton.addActionListener(new ActionListener() {// 添加事件
+                    public void actionPerformed(ActionEvent e) {
+                        int selectedRow = fixedTable.getSelectedRow();// 获得选中行的索引
+                        if (selectedRow == -1) {// 没有选中的行
+                            selectedRow = 0;
+                        }
+                        if (selectedRow != -1) // 存在选中行
+                        {
+                        }
+                        System.out
+                                .println("insertButtonmActionListener selectedRow:"
+                                        + selectedRow);
+                        modifyRecord = new NewOrUpdateTalkDialog(
+                                "New or Update the talk dialog", new Talk());
+                    }
+                });
+        panelSouth.add(insertButton);
 
-      final JButton refreshButton = new JButton("Refresh");
-      refreshButton.addActionListener(new ActionListener() {// 添加事件
-                  public void actionPerformed(ActionEvent e) {
-                      refreshTableModel();
-                  }
-              });
-      panelSouth.add(refreshButton);
+        final JButton refreshButton = new JButton("Refresh");
+        refreshButton.addActionListener(new ActionListener() {// 添加事件
+                    public void actionPerformed(ActionEvent e) {
+                        refreshTableModel();
+                    }
+                });
+        panelSouth.add(refreshButton);
 
-      JButton combineBtn = new JButton("Combine");
-      combineBtn.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-              int[] columns = fixedTable.getSelectedColumns();
-              int[] rows = fixedTable.getSelectedRows();
-              System.out.println("getSelectedColumns="
-                      + Arrays.toString(columns));
-              System.out.println("getSelectedRows=" + Arrays.toString(rows));
-              cellAtt.combine(rows, columns);
-              // tableModel.changeAllCellAttribute();
-              fixedTable.clearSelection();
-              fixedTable.revalidate();
-              fixedTable.repaint();
-          }
-      });
-      panelSouth.add(combineBtn);
+        JButton combineBtn = new JButton("Combine");
+        combineBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int[] columns = fixedTable.getSelectedColumns();
+                int[] rows = fixedTable.getSelectedRows();
+                System.out.println("getSelectedColumns="
+                        + Arrays.toString(columns));
+                System.out.println("getSelectedRows=" + Arrays.toString(rows));
+                cellAtt.combine(rows, columns);
+                // tableModel.changeAllCellAttribute();
+                fixedTable.clearSelection();
+                fixedTable.revalidate();
+                fixedTable.repaint();
+            }
+        });
+        panelSouth.add(combineBtn);
 
-      JButton splitBtn = new JButton("Split");
-      splitBtn.addActionListener(new ActionListener() {
-          public void actionPerformed(ActionEvent e) {
-              int column = fixedTable.getSelectedColumn();
-              int row = fixedTable.getSelectedRow();
-              cellAtt.split(row, column);
-              fixedTable.clearSelection();
-              // revalidate()是把布局管理器对应的容器内的子组件重新计算大小,布局并绘制。
-              // revalidate()是Jcompnent的方法。它并不是立即改变组件的大小，而是标记该组件需要改变大小。
-              // 这样就可以避免了多个组件都要改变大小时带来的重复计算。
-              // 但是，如果想重新计算一个Jframe中的所有组件，就需要调用repaint()方法
-              // validate方法是告诉父容器，“我更新了，你要重绘！”。
-              // 容器自身的重绘，轻量级的方法一般调用repain()。
-              fixedTable.revalidate();
-              fixedTable.repaint();
-          }
-      });
-      panelSouth.add(splitBtn);
-      getContentPane().add(scrollPane);
-  }
+        JButton splitBtn = new JButton("Split");
+        splitBtn.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                int column = fixedTable.getSelectedColumn();
+                int row = fixedTable.getSelectedRow();
+                cellAtt.split(row, column);
+                fixedTable.clearSelection();
+                // revalidate()是把布局管理器对应的容器内的子组件重新计算大小,布局并绘制。
+                // revalidate()是Jcompnent的方法。它并不是立即改变组件的大小，而是标记该组件需要改变大小。
+                // 这样就可以避免了多个组件都要改变大小时带来的重复计算。
+                // 但是，如果想重新计算一个Jframe中的所有组件，就需要调用repaint()方法
+                // validate方法是告诉父容器，“我更新了，你要重绘！”。
+                // 容器自身的重绘，轻量级的方法一般调用repain()。
+                fixedTable.revalidate();
+                fixedTable.repaint();
+            }
+        });
+        panelSouth.add(splitBtn);
+        getContentPane().add(scrollPane);
+    }
 
-  public boolean cellEquals(Object self, Object other) {
-      String strSelf = String.valueOf(self).trim();
-      String strOther = String.valueOf(other).trim();
-      return StringUtils.equals(strSelf, strOther);
-  }
+    public boolean cellEquals(Object self, Object other) {
+        String strSelf = String.valueOf(self).trim();
+        String strOther = String.valueOf(other).trim();
+        return StringUtils.equals(strSelf, strOther);
+    }
 
-  public void setTableCol() {
-//      TableColumnModel tcm = fixedTable.getColumnModel();
-//      // TableColumn tc = table.getColumn("operate");
-//      TableColumn tc = tcm.getColumn(9);// 第10列/最后一列
-//      tc.setPreferredWidth(120);
-//      tc.setCellRenderer(new WordTableCellRenderer());
-//      tc.setCellEditor(new WordTableCellEditor());
+    public void setTableCol() {
+        // TableColumnModel tcm = fixedTable.getColumnModel();
+        // // TableColumn tc = table.getColumn("operate");
+        // TableColumn tc = tcm.getColumn(9);// 第10列/最后一列
+        // tc.setPreferredWidth(120);
+        // tc.setCellRenderer(new WordTableCellRenderer());
+        // tc.setCellEditor(new WordTableCellEditor());
 
-      fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // 单选
-      // 为表格添加监听器// 鼠标事件
-      fixedTable.addMouseListener(new MouseAdapter() {
-          public void mouseClicked(MouseEvent e) {
-              if (e.getClickCount() == 2) { // 或 if(e.getClickCount() > 1)
-                                            // 实现双击事件(前提是设置table不能编辑)
-                  int row = ((JTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
-                  int col = ((JTable) e.getSource()).columnAtPoint(e
-                          .getPoint()); // 获得列位置
-                  System.out.println("右键双击鼠标：row=" + row + ",col=" + col);
-                  // String cellVal = (String)
-                  // (fixedTableModel.getValueAt(row,col)); // 获得点击单元格数据
-                  // System.out.println("右键双击鼠标：cellVal=" + cellVal);
-                  String word = (String) (fixedTableModel.getValueAt(row, 2));
-                  System.out.println("右键双击鼠标：cur word=" + word);
-                  modifyRecord = new NewOrUpdateDialog(
-                          "New or Update the word dialog", word);
-              } else if (e.getClickCount() == 1) {
-                  int selectedRow = fixedTable.getSelectedRow(); // 获得选中行索引
-                  Object oa = fixedTableModel.getValueAt(selectedRow, 0);
-                  Object ob = fixedTableModel.getValueAt(selectedRow, 1);
-                  Object oc = fixedTableModel.getValueAt(selectedRow, 2);
-                  System.out.println("单击,getClickCount == 1,oa=" + oa);
-                  System.out.println("单击,getClickCount == 1,ob=" + ob);
-                  System.out.println("单击,getClickCount == 1,oc=" + oc);
-              } else {
-                  return;
-              }
-          }
-      });
-      // 监听事件
-      fixedTable.getSelectionModel().addListSelectionListener(
-              new ListSelectionListener() {
-                  public void valueChanged(ListSelectionEvent e) {
-                      if (e.getValueIsAdjusting()) {// 连续操作
-                          int rowIndex = fixedTable.getSelectedRow();
-                          if (rowIndex != -1) {
-                              System.out.println("表格行被选中" + rowIndex);
-                              // buttonAlt.setEnabled(true);
-                              // buttonDel.setEnabled(true);
-                          }
-                      }
+        fixedTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // 单选
+        // 为表格添加监听器// 鼠标事件
+        fixedTable.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) { // 或 if(e.getClickCount() > 1)
+                                              // 实现双击事件(前提是设置table不能编辑)
+                    int row = ((JTable) e.getSource()).rowAtPoint(e.getPoint()); // 获得行位置
+                    int col = ((JTable) e.getSource()).columnAtPoint(e
+                            .getPoint()); // 获得列位置
+                    System.out.println("右键双击鼠标：row=" + row + ",col=" + col);
+                    // String cellVal = (String)
+                    // (fixedTableModel.getValueAt(row,col)); // 获得点击单元格数据
+                    // System.out.println("右键双击鼠标：cellVal=" + cellVal);
+                    String talkEnglishTitle = (String) (fixedTableModel
+                            .getValueAt(row, 1));
+                    System.out.println("右键双击鼠标：cur Talk=" + talkEnglishTitle);
+                    try {
+                        List<Talk> talkList = talkDao
+                                .queryForEq(Talk.FIELD_NAME_ENGLISH_TITLE,
+                                        talkEnglishTitle);
+                        Talk selTalk = new Talk();
+                        if (talkList.size() > 0) {
+                            selTalk = talkList.get(0);
+                        }
+                        modifyRecord = new NewOrUpdateTalkDialog(
+                                "New or Update the Talk dialog", selTalk);
+                    } catch (SQLException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
 
-                  }
-              });
-  }
+                } else if (e.getClickCount() == 1) {
+                    int selectedRow = fixedTable.getSelectedRow(); // 获得选中行索引
+                    Object oa = fixedTableModel.getValueAt(selectedRow, 0);
+                    Object ob = fixedTableModel.getValueAt(selectedRow, 1);
+                    Object oc = fixedTableModel.getValueAt(selectedRow, 2);
+                    System.out.println("单击,getClickCount == 1,oa=" + oa);
+                    System.out.println("单击,getClickCount == 1,ob=" + ob);
+                    System.out.println("单击,getClickCount == 1,oc=" + oc);
+                } else {
+                    return;
+                }
+            }
+        });
+        // 监听事件
+        fixedTable.getSelectionModel().addListSelectionListener(
+                new ListSelectionListener() {
+                    public void valueChanged(ListSelectionEvent e) {
+                        if (e.getValueIsAdjusting()) {// 连续操作
+                            int rowIndex = fixedTable.getSelectedRow();
+                            if (rowIndex != -1) {
+                                System.out.println("表格行被选中" + rowIndex);
+                                // buttonAlt.setEnabled(true);
+                                // buttonDel.setEnabled(true);
+                            }
+                        }
 
-  // 设置table数据
-  public void refreshTableModel() {
-      Vector<Vector<Object>> recordList = wordDao.selectAll2Vector();
-      // fixedTableModel.setDataVector(recordList, wordDao.getTableTitle());
-      fixedTableModel.updateData(recordList, wordDao.getTableTitle());
+                    }
+                });
+    }
 
-      if (recordList.size() > 0) {
-          ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
-          int columnCnt = fixedTableModel.getColumnCount();
-          for (int nCurColumn = 1; nCurColumn < columnCnt; nCurColumn++) {// 从第i列开始合并,跳过Id列，
-              if (6 <= nCurColumn && nCurColumn <= 9) {
-                  continue;// 这三列不合并
-              }
+    // 设置table数据
+    public void refreshTableModel() {
+        Vector<Vector<Object>> recordList = talkDao.selectAll2Vector();
+        // fixedTableModel.setDataVector(recordList, talkDao.getTableTitle());
+        fixedTableModel.updateData(recordList, talkDao.getTableTitle());
 
-              int nStartRow = 0;
-              Object vStartValue = recordList.get(0).get(
-                      nCurColumn > 2 ? 2 : nCurColumn);// 获取第0行，第nCurColumn列或第2列单词拼写字段的数据
-              for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {// 从第j行开始与前一行比较
-                  Object vCurValue = recordList.get(nCurRow).get(
-                          nCurColumn > 2 ? 2 : nCurColumn);// 获取第nCurRow行，第nCurColumn列或第2列单词拼写字段的数据
-                  if (nCurRow == recordList.size() - 1) {
-                      int spanRowCnt;
-                      if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
-                          spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
-                      } else {
-                          spanRowCnt = nCurRow - nStartRow + 1; // 边界：包含最后一条记录
-                      }
-                      int[] cellVec = new int[spanRowCnt];
-                      for (int idx = 0; idx < spanRowCnt; idx++) {
-                          cellVec[idx] = nStartRow + idx;
-                      }
-                      if (cellVec.length > 1) {
-                          cellAtt.combine(cellVec, new int[] { nCurColumn });
-                      }
-                      nStartRow = nCurRow;
-                      vStartValue = vCurValue;
-                  } else if (!cellEquals(vCurValue, vStartValue)) {
-                      int spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
-                      int[] cellVec = new int[spanRowCnt];
-                      for (int idx = 0; idx < spanRowCnt; idx++) {
-                          cellVec[idx] = nStartRow + idx;
-                      }
-                      if (cellVec.length > 1) {
-                          cellAtt.combine(cellVec, new int[] { nCurColumn });
-                      }
-                      nStartRow = nCurRow;
-                      vStartValue = vCurValue;
-                  }
-              }
-          }
-      }
-      setTableCol();
-      fixedTableModel.fireTableDataChanged();
-      // getContentPane().add(scrollPane, BorderLayout.CENTER);
-      fixedTable.clearSelection();
-      fixedTable.revalidate();
-      // fixedTable.validate();
-      fixedTable.repaint();
-      // fixedTable.updateUI();
-  }
+        if (recordList.size() > 0) {
+            ICellSpan cellAtt = (ICellSpan) fixedTableModel.getCellAttribute();
+            int columnCnt = fixedTableModel.getColumnCount();
+            for (int nCurColumn = 1; nCurColumn < columnCnt; nCurColumn++) {// 从第i列开始合并,跳过Id列，
+                if (6 <= nCurColumn && nCurColumn <= 9) {
+                    continue;// 这三列不合并
+                }
 
-  public static void main(String[] args) {
-      LevelTalk frame = new LevelTalk();
-      frame.addWindowListener(new WindowAdapter() {
-          public void windowClosing(WindowEvent e) {
-              // destroy the data source which should close underlying
-              // connections
-              if (connectionSource != null) {
-                  try {
-                      connectionSource.close();
-                      connectionSource = null;
-                  } catch (IOException ioe) {
-                      // TODO Auto-generated catch block
-                      ioe.printStackTrace();
-                  }
-              }
-              System.exit(0);
-          }
-      });
-      frame.setVisible(true);
-  }
+                int nStartRow = 0;
+                Object vStartValue = recordList.get(0).get(
+                        nCurColumn > 2 ? 2 : nCurColumn);// 获取第0行，第nCurColumn列或第2列单词拼写字段的数据
+                for (int nCurRow = 1; nCurRow < recordList.size(); nCurRow++) {// 从第j行开始与前一行比较
+                    Object vCurValue = recordList.get(nCurRow).get(
+                            nCurColumn > 2 ? 2 : nCurColumn);// 获取第nCurRow行，第nCurColumn列或第2列单词拼写字段的数据
+                    if (nCurRow == recordList.size() - 1) {
+                        int spanRowCnt;
+                        if (!cellEquals(vCurValue, vStartValue)) {// 最后一条记录的本columu的值不与倒数第二条记录的本column的值相同
+                            spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
+                        } else {
+                            spanRowCnt = nCurRow - nStartRow + 1; // 边界：包含最后一条记录
+                        }
+                        int[] cellVec = new int[spanRowCnt];
+                        for (int idx = 0; idx < spanRowCnt; idx++) {
+                            cellVec[idx] = nStartRow + idx;
+                        }
+                        if (cellVec.length > 1) {
+                            cellAtt.combine(cellVec, new int[] { nCurColumn });
+                        }
+                        nStartRow = nCurRow;
+                        vStartValue = vCurValue;
+                    } else if (!cellEquals(vCurValue, vStartValue)) {
+                        int spanRowCnt = nCurRow - nStartRow; // 边界：不包含最后一条记录
+                        int[] cellVec = new int[spanRowCnt];
+                        for (int idx = 0; idx < spanRowCnt; idx++) {
+                            cellVec[idx] = nStartRow + idx;
+                        }
+                        if (cellVec.length > 1) {
+                            cellAtt.combine(cellVec, new int[] { nCurColumn });
+                        }
+                        nStartRow = nCurRow;
+                        vStartValue = vCurValue;
+                    }
+                }
+            }
+        }
+        setTableCol();
+        fixedTableModel.fireTableDataChanged();
+        // getContentPane().add(scrollPane, BorderLayout.CENTER);
+        fixedTable.clearSelection();
+        fixedTable.revalidate();
+        // fixedTable.validate();
+        fixedTable.repaint();
+        // fixedTable.updateUI();
+    }
+
+    public static void main(String[] args) {
+        LevelTalk frame = new LevelTalk();
+        frame.addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent e) {
+                // destroy the data source which should close underlying
+                // connections
+                if (connectionSource != null) {
+                    try {
+                        connectionSource.close();
+                        connectionSource = null;
+                    } catch (IOException ioe) {
+                        // TODO Auto-generated catch block
+                        ioe.printStackTrace();
+                    }
+                }
+                System.exit(0);
+            }
+        });
+        frame.setVisible(true);
+    }
 }

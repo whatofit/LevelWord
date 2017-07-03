@@ -20,7 +20,7 @@ import com.j256.ormlite.table.DatabaseTable;
     "category": "分类/种类：时尚购物/讨价还价",
     "occasion": "场合:商场",
     "EnglishTitle": "I’m looking for a bookcase",
-    "ChineseTitle": "标题:我想买个书架"
+    "ChineseTitle": "标题:我想买个书架",
     "talk": [
         {
             "person": "A",
@@ -47,33 +47,34 @@ import com.j256.ormlite.table.DatabaseTable;
 @DatabaseTable(tableName = "levelTalks")
 public class Talk {
     // for QueryBuilder to be able to find the fields
-    public static final String FIELD_NAME_CATEGORY = "category";
-    public static final String FIELD_NAME_OCCASION = "occasion";
     public static final String FIELD_NAME_ENGLISH_TITLE = "EnglishTitle";
     public static final String FIELD_NAME_CHINESE_TITLE = "ChineseTitle";
-    public static final String FIELD_NAME_TALK_TEXT = "TalkText";
+    public static final String FIELD_NAME_CATEGORY = "category";
+    public static final String FIELD_NAME_OCCASION = "occasion";
     public static final String FIELD_NAME_LEVEL = "level";
+    public static final String FIELD_NAME_TALK_TEXT = "talkText";
 
     @DatabaseField(generatedId = true)
     private int id;
 
-    @DatabaseField(columnName = FIELD_NAME_CATEGORY)
-    private String category;
-
-    @DatabaseField(columnName = FIELD_NAME_OCCASION)
-    private String occasion;
-
-    @DatabaseField(columnName = FIELD_NAME_ENGLISH_TITLE)
+    @DatabaseField(columnName = FIELD_NAME_ENGLISH_TITLE, canBeNull = false)
     private String englishTitle;
 
     @DatabaseField(columnName = FIELD_NAME_CHINESE_TITLE)
     private String chineseTitle;
 
-    @DatabaseField(columnName = FIELD_NAME_TALK_TEXT, canBeNull = false)
-    private String talkText;//persion/English/Chinese...
-    
+    @DatabaseField(columnName = FIELD_NAME_CATEGORY)
+    private String category;
+
+    //, DbType="NVarChar(20) NOT NULL"
+    @DatabaseField(columnName = FIELD_NAME_OCCASION)
+    private String occasion;
+
     @DatabaseField(columnName = FIELD_NAME_LEVEL)
     private String level;
+
+    @DatabaseField(columnName = FIELD_NAME_TALK_TEXT)
+    private String talkText;// persion/English/Chinese...
 
     public int getId() {
         return id;
@@ -81,6 +82,18 @@ public class Talk {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setEnglishTitle(String englishTitle) {
+        this.englishTitle = englishTitle;
+    }
+
+    public String getChineseTitle() {
+        return chineseTitle;
+    }
+
+    public void setChineseTitle(String chineseTitle) {
+        this.chineseTitle = chineseTitle;
     }
 
     public String getCategory() {
@@ -103,16 +116,12 @@ public class Talk {
         return englishTitle;
     }
 
-    public void setEnglishTitle(String englishTitle) {
-        this.englishTitle = englishTitle;
+    public String getLevel() {
+        return level;
     }
 
-    public String getChineseTitle() {
-        return chineseTitle;
-    }
-
-    public void setChineseTitle(String chineseTitle) {
-        this.chineseTitle = chineseTitle;
+    public void setLevel(String level) {
+        this.level = level;
     }
 
     public String getTalkText() {
@@ -123,14 +132,6 @@ public class Talk {
         this.talkText = talkText;
     }
 
-    public String getLevel() {
-        return level;
-    }
-
-    public void setLevel(String level) {
-        this.level = level;
-    }
-    
     @Override
     public int hashCode() {
         String key = talkText;

@@ -97,7 +97,7 @@ public class LevelWord extends JFrame {
     private MultiSpanCellTable fixedTable;
     private AttributiveCellTableModel fixedTableModel;
 
-    private NewOrUpdateDialog modifyRecord;
+    private NewOrUpdateWordDialog modifyRecord;
 
     public LevelWord() {
         super("Levle word Multi-Span Cell");
@@ -178,7 +178,7 @@ public class LevelWord extends JFrame {
                             // tableModel.addRow(new Object[] { "sitinspring",
                             // "35", "Boss" });
                         }
-                        modifyRecord = new NewOrUpdateDialog(
+                        modifyRecord = new NewOrUpdateWordDialog(
                                 "New or Update the word dialog", "");
                     }
                 });
@@ -259,7 +259,7 @@ public class LevelWord extends JFrame {
                     // System.out.println("右键双击鼠标：cellVal=" + cellVal);
                     String word = (String) (fixedTableModel.getValueAt(row, 2));
                     System.out.println("右键双击鼠标：cur word=" + word);
-                    modifyRecord = new NewOrUpdateDialog(
+                    modifyRecord = new NewOrUpdateWordDialog(
                             "New or Update the word dialog", word);
                 } else if (e.getClickCount() == 1) {
                     int selectedRow = fixedTable.getSelectedRow(); // 获得选中行索引

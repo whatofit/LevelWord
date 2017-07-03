@@ -5,6 +5,12 @@ public class TalkSentence {
     private String es;// = ""; // 英文句子
     private String cs;// = ""; // 中文翻译
 
+    public TalkSentence() {
+        this.person = "";
+        this.es = "";
+        this.cs = "";
+    }
+    
     public TalkSentence(String person) {
         this.person = person;
         this.es = "";
@@ -13,8 +19,8 @@ public class TalkSentence {
 
     public TalkSentence(String person, String es, String cs) {
         this.person = person;
-        this.es = "";
-        this.cs = "";
+        this.es = es;
+        this.cs = cs;
     }
 
     public String getPerson() {
